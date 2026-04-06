@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>llmbrary — Catalog Review</title>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --bg2: #16213e;
+  --bg3: #0f3460;
+  --surface: #1e2a4a;
+  --surface2: #253458;
+  --text: #e0e0e0;
+  --text2: #a0aec0;
+  --accent: #e94560;
+  --accent2: #ff6b6b;
+  --green: #48bb78;
+  --yellow: #ecc94b;
+  --blue: #63b3ed;
+  --border: #2d3748;
+  --radius: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ── Layout ── */
+.app { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+
+header {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+header h1 span { color: var(--accent); }
+header .subtitle { color: var(--text2); font-size: 0.85rem; }
+
+/* ── Stats ── */
+.stats {
+  display: flex; gap: 1rem; padding: 0.75rem 0; flex-wrap: wrap;
+}
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+.stat strong { font-size: 1.2rem; display: block; }
+.stat.warn strong { color: var(--yellow); }
+.stat.ok strong { color: var(--green); }
+.stat.info strong { color: var(--blue); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--border);
+  margin: 1rem 0 0;
+}
+.tab-btn {
+  background: none; border: none; color: var(--text2);
+  padding: 0.6rem 1.2rem; cursor: pointer; font-size: 0.9rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px; transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-content { display: none; padding: 1rem 0; }
+.tab-content.active { display: block; }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+  padding: 0.5rem 0; margin-bottom: 0.5rem;
+}
+.toolbar select, .toolbar input, .toolbar button {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+}
+.toolbar input { min-width: 200px; }
+.toolbar button { cursor: pointer; }
+.toolbar button:hover { background: var(--surface2); }
+.toolbar .spacer { flex: 1; }
+.btn-accent {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  font-weight: 600;
+}
+.btn-accent:hover { background: var(--accent2) !important; }
+.btn-green { background: var(--green) !important; border-color: var(--green) !important; color: #1a1a2e !important; font-weight: 600; }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex; gap: 0.5rem; align-items: center;
+  justify-content: center; padding: 0.75rem 0;
+  font-size: 0.85rem; color: var(--text2);
+}
+.pagination button {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 0.3rem 0.8rem;
+  border-radius: var(--radius); cursor: pointer; font-size: 0.85rem;
+}
+.pagination button:hover { background: var(--surface2); }
+.pagination button:disabled { opacity: 0.3; cursor: default; }
+
+/* ── Entry Card ── */
+.entry-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.15s;
+  position: relative;
+}
+.entry-card.selected { border-color: var(--accent); }
+.entry-card.reviewed { border-left: 3px solid var(--green); }
+.entry-card.flagged { border-left: 3px solid var(--accent); opacity: 0.6; }
+
+.entry-header {
+  display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+.entry-title { font-size: 1.1rem; font-weight: 600; }
+.entry-author { color: var(--text2); font-size: 0.9rem; }
+.entry-year { color: var(--text2); font-size: 0.85rem; }
+
+.entry-badges { display: flex; gap: 0.4rem; margin-left: auto; }
+.badge {
+  font-size: 0.7rem; padding: 0.15rem 0.5rem;
+  border-radius: 999px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.badge-high { background: rgba(72,187,120,0.15); color: var(--green); }
+.badge-medium { background: rgba(236,201,75,0.15); color: var(--yellow); }
+.badge-review { background: rgba(233,69,96,0.15); color: var(--accent); }
+.badge-reviewed { background: rgba(72,187,120,0.2); color: var(--green); }
+.badge-flagged { background: rgba(233,69,96,0.25); color: var(--accent2); }
+
+.entry-synopsis {
+  font-size: 0.85rem; color: var(--text2);
+  margin: 0.4rem 0; line-height: 1.55;
+}
+.entry-meta {
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+  font-size: 0.8rem; color: var(--text2);
+  margin-top: 0.5rem;
+}
+.entry-meta label { color: var(--blue); font-weight: 500; }
+.theme-tag {
+  display: inline-block; background: var(--bg3);
+  padding: 0.1rem 0.5rem; border-radius: 999px;
+  font-size: 0.75rem; margin: 0.1rem 0.15rem;
+}
+.convo-tag {
+  display: inline-block; font-style: italic;
+  font-size: 0.8rem;
+}
+
+/* ── Entry Actions ── */
+.entry-actions {
+  display: flex; gap: 0.4rem; margin-top: 0.6rem;
+}
+.entry-actions button {
+  background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text2); padding: 0.25rem 0.6rem;
+  border-radius: var(--radius); cursor: pointer; font-size: 0.78rem;
+}
+.entry-actions button:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Edit Mode ── */
+.edit-form { display: none; margin-top: 0.75rem; }
+.entry-card.editing .edit-form { display: block; }
+.entry-card.editing .entry-display { display: none; }
+.edit-row {
+  display: flex; gap: 0.5rem; align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+.edit-row label {
+  min-width: 80px; font-size: 0.8rem; color: var(--text2);
+  padding-top: 0.4rem; text-align: right;
+}
+.edit-row input, .edit-row textarea {
+  flex: 1; background: var(--bg);
+  border: 1px solid var(--border); color: var(--text);
+  padding: 0.4rem 0.6rem; border-radius: var(--radius);
+  font-size: 0.85rem; font-family: inherit;
+}
+.edit-row textarea { min-height: 80px; resize: vertical; }
+.edit-buttons { display: flex; gap: 0.4rem; margin-top: 0.5rem; justify-content: flex-end; }
+.edit-buttons button {
+  padding: 0.35rem 1rem; border-radius: var(--radius);
+  border: 1px solid var(--border); cursor: pointer;
+  font-size: 0.85rem;
+}
+.edit-save { background: var(--green); color: #1a1a2e; border-color: var(--green) !important; font-weight: 600; }
+.edit-cancel { background: var(--surface); color: var(--text); }
+
+/* ── Unreadable Tab ── */
+.unreadable-card {
+  display: flex; gap: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.unreadable-photo {
+  flex: 0 0 400px; max-height: 350px;
+  border-radius: var(--radius); overflow: hidden;
+}
+.unreadable-photo img {
+  width: 100%; height: 100%;
+  object-fit: contain; background: #111;
+}
+.unreadable-info { flex: 1; min-width: 250px; }
+.unreadable-desc {
+  font-size: 0.95rem; margin-bottom: 0.25rem;
+}
+.unreadable-pos {
+  font-size: 0.8rem; color: var(--text2); margin-bottom: 1rem;
+}
+.unreadable-form .edit-row { margin-bottom: 0.5rem; }
+.unreadable-form input, .unreadable-form textarea {
+  flex: 1; background: var(--bg);
+  border: 1px solid var(--border); color: var(--text);
+  padding: 0.4rem 0.6rem; border-radius: var(--radius);
+  font-size: 0.85rem; font-family: inherit;
+}
+.unreadable-form textarea { min-height: 60px; resize: vertical; }
+.unreadable-actions {
+  display: flex; gap: 0.4rem; margin-top: 1rem;
+}
+.unreadable-actions button {
+  padding: 0.4rem 1rem; border-radius: var(--radius);
+  border: 1px solid var(--border); cursor: pointer;
+  font-size: 0.85rem; background: var(--surface2); color: var(--text);
+}
+.unreadable-counter {
+  font-size: 0.85rem; color: var(--text2); margin-bottom: 1rem;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--green); color: #1a1a2e;
+  padding: 0.6rem 1.2rem; border-radius: var(--radius);
+  font-weight: 600; font-size: 0.9rem;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none; z-index: 100;
+}
+.toast.show { opacity: 1; }
+
+/* ── Shortcuts help ── */
+.shortcuts {
+  position: fixed; bottom: 1.5rem; left: 1.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0.6rem 0.9rem;
+  font-size: 0.75rem; color: var(--text2); line-height: 1.7;
+}
+.shortcuts kbd {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 3px; padding: 0.1rem 0.35rem;
+  font-family: monospace; font-size: 0.75rem; color: var(--text);
+}
+
+/* ── Loading / Error ── */
+.loading-msg {
+  text-align: center; padding: 3rem;
+  color: var(--text2); font-size: 1rem;
+}
+.error-msg {
+  background: rgba(233,69,96,0.1); border: 1px solid var(--accent);
+  border-radius: var(--radius); padding: 1rem 1.25rem;
+  color: var(--accent2); margin: 1rem 0; font-size: 0.9rem;
+}
+.error-msg code {
+  display: block; margin-top: 0.5rem;
+  font-size: 0.85rem; color: var(--text2);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .unreadable-card { flex-direction: column; }
+  .unreadable-photo { flex: none; max-height: 250px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <h1><span>llm</span>brary</h1>
+    <span class="subtitle">catalog review tool</span>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="catalog">Catalog</button>
+    <button class="tab-btn" data-tab="unreadable">Unreadable</button>
+  </div>
+
+  <!-- Catalog Tab -->
+  <div class="tab-content active" id="tab-catalog">
+    <div class="toolbar">
+      <select id="filter">
+        <option value="all">All entries</option>
+        <option value="needs_review">Needs review</option>
+        <option value="medium">Medium confidence</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="flagged">Flagged</option>
+      </select>
+      <input type="text" id="search" placeholder="Search title, author, theme…">
+      <span class="spacer"></span>
+      <button onclick="exportCatalog()" class="btn-green">⬇ Save catalog.json</button>
+    </div>
+    <div id="catalog-list"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- Unreadable Tab -->
+  <div class="tab-content" id="tab-unreadable">
+    <div class="unreadable-counter" id="unreadable-counter"></div>
+    <div id="unreadable-view"></div>
+    <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+      <button onclick="exportCatalog()" class="btn-green" style="padding:0.4rem 1rem; border-radius:var(--radius); border:none; cursor:pointer; font-size:0.85rem;">⬇ Save catalog.json</button>
+      <button onclick="exportUnreadable()" style="padding:0.4rem 1rem; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; font-size:0.85rem;">⬇ Save unreadable.json</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="shortcuts">
+  <kbd>↑</kbd><kbd>↓</kbd> navigate &nbsp;
+  <kbd>e</kbd> edit &nbsp;
+  <kbd>n</kbd> next &nbsp;
+  <kbd>r</kbd> reviewed &nbsp;
+  <kbd>s</kbd> save &nbsp;
+  <kbd>f</kbd> flag
+</div>
+
+<script>
+// ── State ──
+let catalog = [];
+let unreadable = [];
+let promoted = [];      // entries moved from unreadable → catalog
+let reviewState = {};   // idx → { reviewed, flagged }
+let editState = {};     // idx → edited field values
+
+let currentFilter = 'all';
+let searchQuery = '';
+let page = 0;
+const PAGE_SIZE = 15;
+let selectedIdx = 0;    // index into filteredList
+let filteredList = [];
+
+let unreadableIdx = 0;
+
+// ── Load Data ──
+async function init() {
+  const listEl = document.getElementById('catalog-list');
+  listEl.innerHTML = '<div class="loading-msg">Loading catalog…</div>';
+
+  try {
+    const [catRes, unrRes] = await Promise.all([
+      fetch('catalog.json'),
+      fetch('unreadable.json')
+    ]);
+    if (!catRes.ok || !unrRes.ok) throw new Error('Fetch failed');
+    catalog = await catRes.json();
+    unreadable = await unrRes.json();
+  } catch (e) {
+    listEl.innerHTML = `
+      <div class="error-msg">
+        Could not load JSON files. You likely need to serve this directory locally.
+        <code>cd ~/Development/llmbrary && python3 -m http.server 8000</code>
+        Then open <strong>http://localhost:8000/review.html</strong>
+      </div>`;
+    return;
+  }
+
+  applyFilter();
+  renderStats();
+  renderUnreadable();
+}
+
+// ── Filtering ──
+function applyFilter() {
+  const q = searchQuery.toLowerCase();
+  filteredList = catalog.map((e, i) => ({ entry: e, origIdx: i })).filter(({ entry, origIdx }) => {
+    const rs = reviewState[origIdx] || {};
+    if (currentFilter === 'needs_review' && !entry.needs_review) return false;
+    if (currentFilter === 'medium' && entry.confidence !== 'medium') return false;
+    if (currentFilter === 'reviewed' && !rs.reviewed) return false;
+    if (currentFilter === 'flagged' && !rs.flagged) return false;
+    if (q) {
+      const haystack = [
+        entry.title, entry.author, ...(entry.themes || []),
+        entry.synopsis, ...(entry.in_conversation_with || [])
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+  page = 0;
+  selectedIdx = 0;
+  renderCatalog();
+}
+
+// ── Render Catalog ──
+function renderCatalog() {
+  const listEl = document.getElementById('catalog-list');
+  const start = page * PAGE_SIZE;
+  const pageItems = filteredList.slice(start, start + PAGE_SIZE);
+
+  listEl.innerHTML = pageItems.map((item, i) => {
+    const e = item.entry;
+    const oi = item.origIdx;
+    const rs = reviewState[oi] || {};
+    const ed = editState[oi] || {};
+    const globalPageIdx = start + i;
+    const classes = [
+      'entry-card',
+      globalPageIdx === selectedIdx ? 'selected' : '',
+      rs.reviewed ? 'reviewed' : '',
+      rs.flagged ? 'flagged' : '',
+      ed._editing ? 'editing' : ''
+    ].filter(Boolean).join(' ');
+
+    const title = ed.title ?? e.title ?? '';
+    const author = ed.author ?? e.author ?? '';
+    const year = ed.year ?? e.year ?? '';
+    const synopsis = ed.synopsis ?? e.synopsis ?? '';
+    const themes = ed.themes ?? e.themes ?? [];
+    const convo = e.in_conversation_with ?? [];
+
+    return `
+    <div class="${classes}" data-page-idx="${globalPageIdx}" data-orig-idx="${oi}">
+      <div class="entry-display">
+        <div class="entry-header">
+          <span class="entry-title">${esc(title)}</span>
+          <span class="entry-author">${esc(author)}</span>
+          <span class="entry-year">${year || ''}</span>
+          <div class="entry-badges">
+            ${e.confidence === 'medium' ? '<span class="badge badge-medium">medium</span>' : '<span class="badge badge-high">high</span>'}
+            ${e.needs_review ? '<span class="badge badge-review">needs review</span>' : ''}
+            ${rs.reviewed ? '<span class="badge badge-reviewed">✓ reviewed</span>' : ''}
+            ${rs.flagged ? '<span class="badge badge-flagged">⚑ flagged</span>' : ''}
+          </div>
+        </div>
+        <div class="entry-synopsis">${esc(synopsis)}</div>
+        <div class="entry-meta">
+          <div><label>Themes:</label> ${themes.map(t => `<span class="theme-tag">${esc(t)}</span>`).join('')}</div>
+          ${convo.length ? `<div><label>In conversation with:</label> ${convo.map(c => `<span class="convo-tag">${esc(c)}</span>`).join(', ')}</div>` : ''}
+          <div><label>Source:</label> ${esc(e.source_image)}</div>
+        </div>
+        <div class="entry-actions">
+          <button onclick="startEdit(${oi})">✏ Edit</button>
+          <button onclick="toggleReviewed(${oi})">${rs.reviewed ? '↩ Unmark' : '✓ Reviewed'}</button>
+          <button onclick="toggleFlagged(${oi})">${rs.flagged ? '↩ Unflag' : '⚑ Flag'}</button>
+        </div>
+      </div>
+      <div class="edit-form" id="edit-${oi}">
+        <div class="edit-row"><label>Title</label><input value="${escAttr(title)}" data-field="title"></div>
+        <div class="edit-row"><label>Author</label><input value="${escAttr(author)}" data-field="author"></div>
+        <div class="edit-row"><label>Year</label><input type="number" value="${year || ''}" data-field="year"></div>
+        <div class="edit-row"><label>Synopsis</label><textarea data-field="synopsis">${esc(synopsis)}</textarea></div>
+        <div class="edit-row"><label>Themes</label><input value="${escAttr(themes.join(', '))}" data-field="themes" placeholder="comma separated"></div>
+        <div class="edit-buttons">
+          <button class="edit-cancel" onclick="cancelEdit(${oi})">Cancel</button>
+          <button class="edit-save" onclick="saveEdit(${oi})">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderPagination();
+  renderStats();
+}
+
+function renderPagination() {
+  const total = filteredList.length;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) { el.innerHTML = `<span>${total} entries</span>`; return; }
+  el.innerHTML = `
+    <button ${page === 0 ? 'disabled' : ''} onclick="goPage(${page - 1})">← Prev</button>
+    <span>Page ${page + 1} of ${totalPages} (${total} entries)</span>
+    <button ${page >= totalPages - 1 ? 'disabled' : ''} onclick="goPage(${page + 1})">Next →</button>
+  `;
+}
+
+function goPage(p) {
+  page = p;
+  selectedIdx = page * PAGE_SIZE;
+  renderCatalog();
+  document.getElementById('catalog-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Stats ──
+function renderStats() {
+  const total = catalog.length + promoted.length;
+  const reviewedCount = Object.values(reviewState).filter(r => r.reviewed).length;
+  const needsReview = catalog.filter(e => e.needs_review).length;
+  const flaggedCount = Object.values(reviewState).filter(r => r.flagged).length;
+  const mediumCount = catalog.filter(e => e.confidence === 'medium').length;
+  const unreadLeft = unreadable.length;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat info"><strong>${total}</strong>catalog entries</div>
+    <div class="stat ok"><strong>${reviewedCount}</strong>reviewed</div>
+    <div class="stat warn"><strong>${needsReview}</strong>needs review</div>
+    <div class="stat"><strong>${mediumCount}</strong>medium conf.</div>
+    <div class="stat warn"><strong>${flaggedCount}</strong>flagged</div>
+    <div class="stat"><strong>${unreadLeft}</strong>unreadable left</div>
+    ${promoted.length ? `<div class="stat ok"><strong>${promoted.length}</strong>newly identified</div>` : ''}
+  `;
+}
+
+// ── Edit ──
+function startEdit(oi) {
+  if (!editState[oi]) editState[oi] = {};
+  editState[oi]._editing = true;
+  renderCatalog();
+  const form = document.getElementById(`edit-${oi}`);
+  if (form) form.querySelector('input')?.focus();
+}
+
+function cancelEdit(oi) {
+  if (editState[oi]) editState[oi]._editing = false;
+  renderCatalog();
+}
+
+function saveEdit(oi) {
+  const form = document.getElementById(`edit-${oi}`);
+  if (!form) return;
+  const inputs = form.querySelectorAll('[data-field]');
+  if (!editState[oi]) editState[oi] = {};
+  inputs.forEach(inp => {
+    const field = inp.dataset.field;
+    let val = inp.value.trim();
+    if (field === 'year') val = val ? parseInt(val, 10) : null;
+    if (field === 'themes') val = val.split(',').map(s => s.trim()).filter(Boolean);
+    editState[oi][field] = val;
+    catalog[oi][field] = val; // apply to in-memory catalog
+  });
+  editState[oi]._editing = false;
+  toast('Changes saved in memory');
+  renderCatalog();
+}
+
+function toggleReviewed(oi) {
+  if (!reviewState[oi]) reviewState[oi] = {};
+  reviewState[oi].reviewed = !reviewState[oi].reviewed;
+  renderCatalog();
+}
+
+function toggleFlagged(oi) {
+  if (!reviewState[oi]) reviewState[oi] = {};
+  reviewState[oi].flagged = !reviewState[oi].flagged;
+  renderCatalog();
+}
+
+// ── Export ──
+function exportCatalog() {
+  const output = catalog
+    .filter((_, i) => !(reviewState[i] || {}).flagged)
+    .map(e => {
+      const copy = { ...e };
+      delete copy.needs_review; // clean up review flags
+      return copy;
+    })
+    .concat(promoted);
+
+  downloadJSON(output, 'catalog.json');
+  toast(`Exported ${output.length} entries (${promoted.length} newly added, flagged removed)`);
+}
+
+function exportUnreadable() {
+  downloadJSON(unreadable, 'unreadable.json');
+  toast(`Exported ${unreadable.length} unreadable entries`);
+}
+
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Unreadable Tab ──
+function renderUnreadable() {
+  const el = document.getElementById('unreadable-view');
+  const counter = document.getElementById('unreadable-counter');
+
+  if (unreadable.length === 0) {
+    el.innerHTML = '<div class="loading-msg">All unreadable entries have been processed.</div>';
+    counter.textContent = '';
+    renderStats();
+    return;
+  }
+
+  if (unreadableIdx >= unreadable.length) unreadableIdx = unreadable.length - 1;
+  const entry = unreadable[unreadableIdx];
+  counter.textContent = `Entry ${unreadableIdx + 1} of ${unreadable.length}`;
+
+  el.innerHTML = `
+    <div class="unreadable-card">
+      <div class="unreadable-photo">
+        <img src="photos/${esc(entry.source_image)}" alt="${esc(entry.source_image)}">
+      </div>
+      <div class="unreadable-info">
+        <div class="unreadable-desc"><strong>Description:</strong> ${esc(entry.description)}</div>
+        <div class="unreadable-pos"><strong>Position:</strong> ${esc(entry.position)} · <strong>Source:</strong> ${esc(entry.source_image)}</div>
+        <div class="unreadable-form">
+          <div class="edit-row"><label style="min-width:70px">Title</label><input id="ur-title" placeholder="Book title"></div>
+          <div class="edit-row"><label style="min-width:70px">Author</label><input id="ur-author" placeholder="Author name"></div>
+          <div class="edit-row"><label style="min-width:70px">Year</label><input id="ur-year" type="number" placeholder="Year"></div>
+          <div class="edit-row"><label style="min-width:70px">Synopsis</label><textarea id="ur-synopsis" placeholder="Brief synopsis (optional)"></textarea></div>
+          <div class="edit-row"><label style="min-width:70px">Themes</label><input id="ur-themes" placeholder="Comma separated themes"></div>
+        </div>
+        <div class="unreadable-actions">
+          <button class="btn-green" onclick="promoteUnreadable()" style="color:#1a1a2e">✓ Add to Catalog</button>
+          <button onclick="skipUnreadable()">Skip →</button>
+          <button onclick="cantIdentify()" style="color:var(--yellow)">? Can't Identify</button>
+          ${unreadableIdx > 0 ? '<button onclick="prevUnreadable()">← Back</button>' : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function promoteUnreadable() {
+  const title = document.getElementById('ur-title').value.trim();
+  const author = document.getElementById('ur-author').value.trim();
+  if (!title) { toast('Title is required'); return; }
+
+  const entry = unreadable[unreadableIdx];
+  const yearVal = document.getElementById('ur-year').value.trim();
+  const synopsisVal = document.getElementById('ur-synopsis').value.trim();
+  const themesVal = document.getElementById('ur-themes').value.trim();
+
+  promoted.push({
+    title,
+    author: author || null,
+    year: yearVal ? parseInt(yearVal, 10) : null,
+    synopsis: synopsisVal || null,
+    themes: themesVal ? themesVal.split(',').map(s => s.trim()).filter(Boolean) : [],
+    source_image: entry.source_image,
+    confidence: 'manual',
+    in_conversation_with: [],
+    manually_added: true
+  });
+
+  unreadable.splice(unreadableIdx, 1);
+  if (unreadableIdx >= unreadable.length) unreadableIdx = Math.max(0, unreadable.length - 1);
+  toast(`"${title}" added to catalog`);
+  renderUnreadable();
+  renderStats();
+}
+
+function skipUnreadable() {
+  unreadableIdx = (unreadableIdx + 1) % Math.max(1, unreadable.length);
+  renderUnreadable();
+}
+
+function prevUnreadable() {
+  if (unreadableIdx > 0) unreadableIdx--;
+  renderUnreadable();
+}
+
+function cantIdentify() {
+  toast('Kept as unreadable, moving on');
+  skipUnreadable();
+}
+
+// ── Tabs ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ── Filter / Search ──
+document.getElementById('filter').addEventListener('change', e => {
+  currentFilter = e.target.value;
+  applyFilter();
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value;
+  applyFilter();
+});
+
+// ── Keyboard Shortcuts ──
+document.addEventListener('keydown', e => {
+  // Don't interfere with inputs
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+    if (e.key === 'Escape') { e.target.blur(); e.preventDefault(); }
+    return;
+  }
+
+  const catalogVisible = document.getElementById('tab-catalog').classList.contains('active');
+
+  if (e.key === 'ArrowDown' || e.key === 'j') {
+    e.preventDefault();
+    if (catalogVisible) moveSelection(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'k') {
+    e.preventDefault();
+    if (catalogVisible) moveSelection(-1);
+  } else if (e.key === 'e') {
+    e.preventDefault();
+    if (catalogVisible) editSelected();
+  } else if (e.key === 'n') {
+    e.preventDefault();
+    if (catalogVisible) moveSelection(1);
+    else skipUnreadable();
+  } else if (e.key === 'r') {
+    e.preventDefault();
+    if (catalogVisible) reviewSelected();
+  } else if (e.key === 'f') {
+    e.preventDefault();
+    if (catalogVisible) flagSelected();
+  } else if (e.key === 's') {
+    e.preventDefault();
+    exportCatalog();
+  }
+});
+
+function moveSelection(delta) {
+  const newIdx = selectedIdx + delta;
+  if (newIdx < 0 || newIdx >= filteredList.length) return;
+  selectedIdx = newIdx;
+  const newPage = Math.floor(selectedIdx / PAGE_SIZE);
+  if (newPage !== page) { page = newPage; }
+  renderCatalog();
+  const card = document.querySelector(`.entry-card[data-page-idx="${selectedIdx}"]`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function editSelected() {
+  const item = filteredList[selectedIdx];
+  if (item) startEdit(item.origIdx);
+}
+
+function reviewSelected() {
+  const item = filteredList[selectedIdx];
+  if (item) toggleReviewed(item.origIdx);
+}
+
+function flagSelected() {
+  const item = filteredList[selectedIdx];
+  if (item) toggleFlagged(item.origIdx);
+}
+
+// ── Helpers ──
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return esc(s).replace(/'/g, '&#39;');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>
