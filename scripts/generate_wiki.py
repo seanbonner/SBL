@@ -10,6 +10,8 @@ Usage:
     python3 scripts/generate_wiki.py
 """
 
+
+from __future__ import annotations
 import json
 import re
 from pathlib import Path
@@ -934,9 +936,19 @@ def generate_wiki():
     WIKI_DIR.mkdir(exist_ok=True)
 
     pages = []
+    skipped = []
     for page_fn in WIKI_PAGES:
-        title, filename, content = page_fn(catalog, indices)
-        pages.append((title, filename, content))
+        try:
+            title, filename, content = page_fn(catalog, indices)
+            pages.append((title, filename, content))
+        except KeyError as e:
+            # Page references a title not in the current catalog; skip it.
+            # As the catalog grows, more pages will activate automatically.
+            skipped.append((page_fn.__name__, str(e)))
+    if skipped:
+        print(f"  Skipped {len(skipped)} wiki page(s) missing catalog titles:")
+        for name, missing in skipped:
+            print(f"    - {name}: missing {missing}")
 
     # Write pages
     for title, filename, content in pages:
