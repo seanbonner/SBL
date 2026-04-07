@@ -15,6 +15,8 @@ Usage:
     python3 scripts/import_filenames.py films.txt --dry-run
 """
 
+
+from __future__ import annotations
 import json
 import re
 import sys

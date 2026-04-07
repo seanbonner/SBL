@@ -16,6 +16,8 @@ Usage:
 Reads and writes processing_log.json to avoid reprocessing images.
 """
 
+
+from __future__ import annotations
 import argparse
 import json
 import os

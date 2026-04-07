@@ -17,6 +17,8 @@ following the schema defined in schema.json. Entries missing enrichment fields
 Deduplication uses difflib.SequenceMatcher for fuzzy title matching.
 """
 
+
+from __future__ import annotations
 import argparse
 import json
 import sys

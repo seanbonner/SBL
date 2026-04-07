@@ -16,6 +16,8 @@ Checks for:
 Prints suggestions for improving the knowledge base.
 """
 
+
+from __future__ import annotations
 import json
 import sys
 from pathlib import Path

@@ -22,6 +22,8 @@ Deduplicates against catalog.json using fuzzy matching (difflib.SequenceMatcher)
 Outputs new_extractions.json with entries marked source: "text_import".
 """
 
+
+from __future__ import annotations
 import argparse
 import csv
 import io

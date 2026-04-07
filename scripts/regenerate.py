@@ -21,6 +21,8 @@ threads across the collection (via generate_wiki.py).
 Run this after any changes to catalog.json to keep all generated files in sync.
 """
 
+
+from __future__ import annotations
 import argparse
 import json
 import sys
