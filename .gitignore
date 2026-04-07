@@ -41,3 +41,6 @@ photos/processed/*.jpeg
 photos/processed/*.jpg
 photos/processed/*.png
 photos/processed/*.heic
+
+# Obsidian per-vault config (local editor state)
+.obsidian/
