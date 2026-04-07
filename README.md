@@ -1,10 +1,24 @@
-# llmbrary
+# SBL — Shelf-Based LLM Library
 
 Turn a physical media collection into a portable knowledge base for LLMs.
+
+> **A modded fork of [llmbrary](https://github.com/mccoyspace/llmbrary)** by Kevin McCoy. SBL keeps the catalog format and pipeline shape but rewrites the generators to be configuration-driven and theme-clustered, so you can fork it, point it at your own catalog, and get honest output without editing code.
 
 This repository is a template for building a structured catalog of books, films, and music extracted from photographs of shelves or imported from text lists. The catalog is designed to be loaded into LLM context windows, giving AI assistants awareness of the intellectual background behind a conversation — the books that shaped how you think, the films that informed your visual language, the music that soundtracks your practice.
 
 Fork it, fill it with your own collection, and point an LLM at the generated context files.
+
+## What's different from upstream llmbrary
+
+If you've used llmbrary and are wondering whether to switch:
+
+- **Configuration via `config.json`** — owner name, profile text, cluster sizing all live in a gitignored config file. No code edits required to make the repo your own.
+- **Theme-driven clustering** — clusters are derived from the `themes` arrays on your catalog entries, not from a hardcoded keyword list tuned to one person's collection. An iterative pruning pass ensures every cluster has at least `cluster_min_size` members (default 2), so you don't get singleton clusters.
+- **Theme-based wiki generator** — replaces the 25 hardcoded essay-style page functions with one page per theme cluster, listing entries with synopses and cross-references. Honest organization, no invented prose. Skipped pages on first run aren't a thing anymore.
+- **Python 3.9 compatible** — adds `from __future__ import annotations` to all scripts so they run on stock macOS Python without needing a newer install.
+- **Depersonalized docs and skill wrapper** — README, `claude/SKILL.md`, and `schema.json` no longer reference a specific person's collection or hardcode counts that would be wrong for any other user.
+
+The catalog format (`schema.json`), the pipeline stages (ingest → merge → regenerate), and the three context tiers are all the same. If you have a catalog from upstream llmbrary, it should work in SBL unchanged.
 
 ## Why
 
@@ -27,7 +41,7 @@ If `media_type` is missing from an entry, it defaults to `"book"` for backward c
 ## Repository Structure
 
 ```
-llmbrary/
+SBL/
 ├── config.example.json       # Template for config.json (gitignored). Owner name, profile, cluster sizing.
 ├── catalog.json              # Enriched catalog entries (gitignored, personal data)
 ├── CONTEXT.md                # Full catalog as markdown (~40K tokens, gitignored)

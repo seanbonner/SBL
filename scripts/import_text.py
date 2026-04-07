@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-import_text.py — Import books from a plain text file into llmbrary.
+import_text.py — Import books from a plain text file into SBL.
 
 Supports multiple line formats (auto-detected or forced via --format):
   - dash:       Title - Author  or  Title — Author
@@ -302,7 +302,7 @@ def make_catalog_entry(parsed: dict) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Import books from a plain text file into llmbrary."
+        description="Import books from a plain text file into SBL."
     )
     parser.add_argument(
         "input_file",

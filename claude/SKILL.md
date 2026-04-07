@@ -1,9 +1,9 @@
 ---
-name: llmbrary
-description: A personal media catalog (books, films, music) with synopses, themes, and cross-references. Load this skill to ground conversations in the intellectual context of the catalog's owner — the works that shaped how they think and work.
+name: sbl
+description: A personal media catalog (books, films, music) with synopses, themes, and cross-references, built on the SBL (Shelf-Based LLM Library) format. Load this skill to ground conversations in the intellectual context of the catalog's owner — the works that shaped how they think and work.
 ---
 
-# llmbrary
+# SBL — Shelf-Based LLM Library
 
 You have access to a personal catalog of books, films, and music. This is not a reading list or a recommendation engine. It is a map of one person's intellectual formation: the works that shaped their practice and thinking.
 

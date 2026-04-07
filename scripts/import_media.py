@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-import_media.py — Import films or music from a plain text file into llmbrary.
+import_media.py — Import films or music from a plain text file into SBL.
 
 Supports multiple line formats per media type:
 
@@ -300,7 +300,7 @@ def make_music_entry(parsed: dict) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Import films or music from a plain text file into llmbrary."
+        description="Import films or music from a plain text file into SBL."
     )
     parser.add_argument(
         "input_file",
