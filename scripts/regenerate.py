@@ -34,6 +34,8 @@ CATALOG_PATH = REPO_ROOT / "catalog.json"
 CONTEXT_PATH = REPO_ROOT / "CONTEXT.md"
 COMPACT_PATH = REPO_ROOT / "CONTEXT_COMPACT.md"
 OVERVIEW_PATH = REPO_ROOT / "CONTEXT_OVERVIEW.md"
+CONFIG_PATH = REPO_ROOT / "config.json"
+CONFIG_EXAMPLE_PATH = REPO_ROOT / "config.example.json"
 
 VALID_MEDIA_TYPES = {"book", "film", "music"}
 
@@ -44,180 +46,64 @@ MEDIA_LABELS = {
     "music": "\U0001F3B5",  # musical note
 }
 
-# ---------------------------------------------------------------------------
-# Thematic groupings — each entry is assigned to the best-matching group
-# based on keyword scoring across title, author/director/artist, themes,
-# and synopsis.
-# ---------------------------------------------------------------------------
-GROUPINGS = [
-    {
-        "name": "Video Art & Moving Image",
-        "keywords": ["video", "moving image", "Paik", "Viola", "Gary Hill", "Joan Jonas",
-                      "Videofreex", "Vostell", "Broken Screen", "Echo"],
-    },
-    {
-        "name": "Film Theory & Cinema",
-        "keywords": ["film", "cinema", "Godard", "Frampton", "Marker", "Lynch",
-                      "La Jetée", "Film Art", "Circles of Confusion"],
-    },
-    {
-        "name": "Performance Art & Body",
-        "keywords": ["performance", "Acconci", "Yoko Ono", "body", "Artaud", "United States"],
-    },
-    {
-        "name": "Fluxus, Neo-Dada & Experimental Art",
-        "keywords": ["Fluxus", "Beuys", "Rauschenberg", "Dieter Roth",
-                      "Niki de Saint Phalle", "Maciunas", "Neo-Dada"],
-    },
-    {
-        "name": "Conceptual & Rule-Based Art",
-        "keywords": ["conceptual", "rule-based", "Sophie Calle", "Glenn Ligon",
-                      "David Diao", "Logical Conclusions", "Mechanism of Meaning"],
-    },
-    {
-        "name": "Sculpture, Installation & Space",
-        "keywords": ["sculpture", "installation", "Eva Hesse", "Nancy Graves", "Ruth Asawa",
-                      "Boltanski", "Maya Lin", "Matta-Clark", "Richard Long", "Drawing",
-                      "Architecture"],
-    },
-    {
-        "name": "Painting, Abstraction & Color",
-        "keywords": ["painting", "abstraction", "Jack Whitten", "Ninth Street Women",
-                      "Terry Winters", "Richter", "Penck", "Bulatov"],
-    },
-    {
-        "name": "Photography & Image",
-        "keywords": ["photography", "photo", "Naked City", "Dirty Windows",
-                      "Hidden Mother", "Women Photographers"],
-    },
-    {
-        "name": "Digital Art, New Media & NFTs",
-        "keywords": ["digital", "new media", "NFT", "Processing", "Rhizome",
-                      "Collective Intelligence", "Surfing with Satoshi"],
-    },
-    {
-        "name": "Typography, Design & Visual Language",
-        "keywords": ["typography", "design", "typographic", "Tibor Kalman",
-                      "Graphic Design", "2nd Sight", "Elements of Typographic"],
-    },
-    {
-        "name": "Architecture, Urbanism & Built Environment",
-        "keywords": ["architecture", "urban", "Rural Studio", "Off the Grid",
-                      "building", "space", "dwelling"],
-    },
-    {
-        "name": "Craft, Material Culture & Objects",
-        "keywords": ["craft", "material", "Anni Albers", "Knit Like", "Art Deco",
-                      "ceramic", "weaving"],
-    },
-    {
-        "name": "Music: Experimental, Jazz & Sound Studies",
-        "keywords": ["music", "jazz", "sound", "Coltrane", "Arcana", "Soundscape",
-                      "Musician", "Ken Burns", "Voice in the Headphones", "Soloists"],
-    },
-    {
-        "name": "Sacred Singing & Oral Tradition",
-        "keywords": ["Sacred Harp", "shape-note", "Shenandoah", "Haida",
-                      "Bringhurst", "oral"],
-    },
-    {
-        "name": "Situationism, Spectacle & Everyday Life",
-        "keywords": ["Situationism", "Debord", "SI", "Everyday Life",
-                      "All That Is Solid", "spectacle", "Egress"],
-    },
-    {
-        "name": "Critical Theory & Philosophy",
-        "keywords": ["Benjamin", "Foucault", "Deleuze", "Wittgenstein", "Danto",
-                      "Hickey", "Krauss", "Scarry", "Nagel", "DeLanda", "Rancière",
-                      "theory", "philosophy"],
-    },
-    {
-        "name": "Media Theory & Digital Culture",
-        "keywords": ["media", "electronic", "digital", "Protocol", "Social Media",
-                      "Body Invaders", "Flusser", "Commodity Aesthetics"],
-    },
-    {
-        "name": "Political Philosophy & Radical Thought",
-        "keywords": ["political", "Caliban", "Witch", "Art of Not Being Governed",
-                      "Multitude", "Crypto", "Achieving Our Country", "Freedom",
-                      "Detroit", "City of Quartz"],
-    },
-    {
-        "name": "Feminism, Gender & Identity",
-        "keywords": ["feminist", "feminism", "gender", "Room of One's Own",
-                      "Xenofeminism", "Species Meet", "Woman Destroyed", "Women"],
-    },
-    {
-        "name": "Literature: Beat Generation & Experimental Writing",
-        "keywords": ["Burroughs", "Gysin", "Beat", "Letters"],
-    },
-    {
-        "name": "Literature: American Canon",
-        "keywords": ["Twain", "Saunders", "Carver", "Faulkner", "Lowell", "Sexton",
-                      "Dickinson", "Bowles", "Delights", "Century of Fiction"],
-    },
-    {
-        "name": "Literature: European & World Voices",
-        "keywords": ["Woolf", "Kundera", "Brontë", "Celan", "Rilke", "Pavese",
-                      "Coetzee", "Kazantzakis", "Erpenbeck"],
-    },
-    {
-        "name": "Science Fiction & Speculative Imagination",
-        "keywords": ["Ubik", "Software", "Lovecraft", "St. Clair", "Ministry for the Future",
-                      "Ballard", "speculative", "fiction"],
-    },
-    {
-        "name": "Drama, Theater & Narrative",
-        "keywords": ["drama", "theater", "Macbeth", "Good Woman", "Setzuan",
-                      "Idea of a Theater"],
-    },
-    {
-        "name": "Myth, Religion & Spirituality",
-        "keywords": ["myth", "religion", "Hero", "Thousand Faces", "Norse", "Saga",
-                      "Temptation", "Augustine", "Meditation", "spiritual"],
-    },
-    {
-        "name": "Psychology & Mind",
-        "keywords": ["psychology", "Interpretation of Dreams", "dream", "unconscious"],
-    },
-    {
-        "name": "Art World, Institutions & Discourse",
-        "keywords": ["Best Art", "I Like Your Work", "Art School", "Art Spirit",
-                      "Inside the Studio", "Biennial", "Museum", "Gallery"],
-    },
-    {
-        "name": "Environmentalism, Nature & Land",
-        "keywords": ["Wilderness", "American Mind", "Against the Machine", "This Land",
-                      "Low Tech", "environment", "nature", "land"],
-    },
-    {
-        "name": "Comics, Graphic Narrative & Visual Storytelling",
-        "keywords": ["comics", "graphic", "Walking Dead", "Nat Turner", "narrative"],
-    },
-    {
-        "name": "Miscellaneous & Reference",
-        "keywords": ["self-help", "astrology", "health", "cooking", "industrial",
-                      "counterculture", "Blueprint", "Sing Backwards"],
-    },
-]
+MISC_CLUSTER_NAME = "Miscellaneous"
+
 
 # ---------------------------------------------------------------------------
-# Shared intellectual overview
+# Config loading
 # ---------------------------------------------------------------------------
-INTRO = (
-    "This collection spans the artistic, theoretical, and cultural territories that "
-    "have shaped contemporary creative practice at the intersection of digital culture, "
-    "visual art, and critical thought. Kevin McCoy, known as a pioneering digital artist "
-    "and co-creator of the first NFT, has built a deeply curated library that moves "
-    "fluidly across video art and cinema, performance and embodiment, theoretical "
-    "philosophy and experimental literature, craft traditions and digital media. The "
-    "collection maps a landscape where Fluxus gestures meet algorithmic thinking, where "
-    "Situationist critique encounters net culture, where the hand-made and the digital, "
-    "the sacred and the profane, coexist in productive tension. It treats art history, "
-    "media theory, radical politics, music, mythology, and material practice as "
-    "interconnected dimensions of a single, evolving intellectual project — spanning "
-    "books, films, and music."
-)
+
+DEFAULT_CONFIG = {
+    "owner_name": "Your Name",
+    "collection_name": "Your Name's Collection",
+    "intellectual_profile": (
+        "This is a personal media catalog — a structured record of the books, "
+        "films, and music that have shaped how I think and work. Edit this in config.json."
+    ),
+    "profile_closer": "A working library. Edit this in config.json.",
+    "cross_cutting_threads": (
+        "Cross-cutting threads and relationships are traced via the "
+        "`in_conversation_with` graph in the full catalog."
+    ),
+    "cluster_min_size": 2,
+    "max_overview_clusters": 15,
+}
+
+
+def load_config() -> dict:
+    """Load config.json if present, else config.example.json, else defaults.
+
+    Keys missing from the loaded file fall back to DEFAULT_CONFIG so the
+    pipeline always works, even against an incomplete config.
+    """
+    cfg = dict(DEFAULT_CONFIG)
+    for path in (CONFIG_PATH, CONFIG_EXAMPLE_PATH):
+        if path.exists():
+            try:
+                with open(path, "r") as f:
+                    loaded = json.load(f)
+                # Drop commentary keys (anything starting with "_") and unknown keys
+                for k, v in loaded.items():
+                    if k.startswith("_"):
+                        continue
+                    if k in DEFAULT_CONFIG:
+                        cfg[k] = v
+                return cfg
+            except (OSError, json.JSONDecodeError):
+                continue
+    return cfg
+
+
+# ---------------------------------------------------------------------------
+# Theme-driven clustering
+#
+# Clusters are derived from the themes arrays on catalog entries, not from
+# hardcoded keyword lists. A cluster is created for each theme that appears
+# on at least `cluster_min_size` entries. Each entry is placed in its most
+# specific qualifying cluster (the one with the smallest total count), so
+# narrow clusters aren't swallowed by broad ones. Entries with no qualifying
+# theme land in "Miscellaneous".
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -268,46 +154,140 @@ def load_catalog() -> list[dict]:
         return json.load(f)
 
 
-def categorize(entry: dict) -> int:
-    """Score entry against each grouping, return index of best match."""
-    title = entry.get("title", "").lower()
-    creator = get_creator(entry).lower()
-    themes = [t.lower() for t in entry.get("themes", [])]
-    synopsis = entry.get("synopsis", "").lower()
-    combined = f"{title} {creator} {' '.join(themes)} {synopsis}"
-
-    best_score, best_idx = -1, len(GROUPINGS) - 1  # default to Misc
-
-    for idx, group in enumerate(GROUPINGS):
-        score = 0
-        for kw in group["keywords"]:
-            kw_lower = kw.lower()
-            if kw_lower in title:
-                score += 10
-            elif kw_lower in creator or kw_lower in themes:
-                score += 8
-            elif kw_lower in combined:
-                score += 3
-        if score > best_score:
-            best_score = score
-            best_idx = idx
-
-    return best_idx
+def _normalize_theme(t: str) -> str:
+    """Normalize a theme string for counting and display."""
+    return " ".join(t.strip().split()).lower()
 
 
-def build_buckets(catalog: list[dict]) -> dict[int, list[dict]]:
-    """Categorize all entries into grouping buckets, sorted by media type then title."""
-    buckets: dict[int, list[dict]] = {i: [] for i in range(len(GROUPINGS))}
+def _display_theme(t: str) -> str:
+    """Render a normalized theme as a human-friendly cluster label.
+
+    - Short function words (and, or, the, of, in, for, a, an) stay lowercase
+      unless they're the first word.
+    - Words matching SPECIAL_CASE keep their canonical casing (NFTs, DAO, etc.).
+    - Everything else is title-cased.
+    """
+    SPECIAL_CASE = {
+        "nft": "NFT",
+        "nfts": "NFTs",
+        "ai": "AI",
+        "dj": "DJ",
+        "dao": "DAO",
+        "daos": "DAOs",
+        "url": "URL",
+        "cpu": "CPU",
+        "gpu": "GPU",
+        "3d": "3D",
+        "2d": "2D",
+        "obey": "OBEY",
+        "mtv": "MTV",
+        "mschf": "MSCHF",
+        "kaws": "KAWS",
+        "bbc": "BBC",
+        "nyc": "NYC",
+        "uk": "UK",
+        "usa": "USA",
+    }
+    LOWER_WORDS = {"and", "or", "the", "of", "in", "for", "a", "an", "to", "on", "with", "as"}
+    parts = t.split()
+    out = []
+    for i, p in enumerate(parts):
+        lower = p.lower()
+        if lower in SPECIAL_CASE:
+            out.append(SPECIAL_CASE[lower])
+        elif i > 0 and lower in LOWER_WORDS:
+            out.append(lower)
+        else:
+            out.append(p[:1].upper() + p[1:])
+    return " ".join(out)
+
+
+def derive_clusters(
+    catalog: list[dict], min_size: int
+) -> tuple[list[str], dict[str, list[dict]]]:
+    """Derive cluster names and assign catalog entries to them.
+
+    Algorithm:
+      1. Count theme frequencies across the catalog.
+      2. A theme initially "qualifies" if it appears on >= min_size entries.
+      3. Each entry is assigned to its most specific qualifying theme
+         (smallest count among its themes; alphabetical tiebreak).
+      4. Because "most specific" can drain a broader theme of its members
+         (its entries prefer narrower sub-themes), we then prune any cluster
+         whose actual assigned size is below min_size and reassign those
+         entries — repeating until stable. The pruning is bounded to avoid
+         infinite loops on pathological inputs.
+
+    Returns:
+        cluster_order: list of cluster display names, largest first,
+                       with MISC_CLUSTER_NAME appended last if non-empty.
+        buckets: dict mapping display name -> list of entries, sorted by
+                 media type then title within each cluster.
+    """
+    # 1) Count normalized theme frequencies
+    theme_counts: Counter[str] = Counter()
     for entry in catalog:
-        buckets[categorize(entry)].append(entry)
-    # Sort: books first, then films, then music; alphabetical within each type
+        seen = set()
+        for t in entry.get("themes", []):
+            n = _normalize_theme(t)
+            if n and n not in seen:
+                theme_counts[n] += 1
+                seen.add(n)
+
+    # 2) Initial qualifying set
+    qualifying = {t for t, c in theme_counts.items() if c >= min_size}
+
+    # 3 + 4) Iterate: assign, prune undersized clusters, repeat
+    def assign(qual: set[str]) -> dict[str, list[dict]]:
+        assigned: dict[str, list[dict]] = {}
+        for entry in catalog:
+            entry_themes = {_normalize_theme(t) for t in entry.get("themes", [])}
+            candidates = entry_themes & qual
+            if candidates:
+                chosen = min(candidates, key=lambda t: (theme_counts[t], t))
+                key = chosen  # use raw key internally; display later
+            else:
+                key = None  # Miscellaneous sentinel
+            assigned.setdefault(key, []).append(entry)
+        return assigned
+
+    assigned = assign(qualifying)
+    for _ in range(20):  # bounded; usually converges in 1-3 passes
+        undersized = {k for k, v in assigned.items()
+                      if k is not None and len(v) < min_size}
+        if not undersized:
+            break
+        qualifying -= undersized
+        assigned = assign(qualifying)
+
+    # 5) Convert internal keys -> display labels and sort entries
     type_order = {"book": 0, "film": 1, "music": 2}
-    for idx in buckets:
-        buckets[idx].sort(key=lambda e: (
+    buckets: dict[str, list[dict]] = {}
+    for key, entries in assigned.items():
+        label = MISC_CLUSTER_NAME if key is None else _display_theme(key)
+        buckets.setdefault(label, []).extend(entries)
+    for label in buckets:
+        buckets[label].sort(key=lambda e: (
             type_order.get(get_media_type(e), 9),
             e.get("title", "").lower()
         ))
-    return buckets
+
+    # 6) Cluster order: largest first, Miscellaneous always last
+    named = [(label, len(entries)) for label, entries in buckets.items()
+             if label != MISC_CLUSTER_NAME]
+    named.sort(key=lambda x: (-x[1], x[0]))
+    cluster_order = [label for label, _ in named]
+    if MISC_CLUSTER_NAME in buckets:
+        cluster_order.append(MISC_CLUSTER_NAME)
+
+    return cluster_order, buckets
+
+
+def build_buckets(
+    catalog: list[dict], config: dict
+) -> tuple[list[str], dict[str, list[dict]]]:
+    """Cluster the catalog and return (cluster_order, buckets)."""
+    return derive_clusters(catalog, min_size=int(config.get("cluster_min_size", 2)))
 
 
 # ---------------------------------------------------------------------------
@@ -365,42 +345,47 @@ def format_entry_full(entry: dict, all_titles: set) -> list[str]:
     return lines
 
 
-def generate_full(catalog: list[dict], buckets: dict[int, list[dict]]) -> int:
-    """Generate CONTEXT.md — full version with complete synopses."""
-    all_titles = {e["title"] for e in catalog}
-
-    # Count by media type
+def _type_summary(catalog: list[dict]) -> str:
+    """Return a human-readable media breakdown like '12 books, 3 films'."""
     type_counts = Counter(get_media_type(e) for e in catalog)
-    type_summary_parts = []
+    parts = []
     for mt in ["book", "film", "music"]:
         if type_counts[mt]:
             label = "books" if mt == "book" else "films" if mt == "film" else "albums"
-            type_summary_parts.append(f"{type_counts[mt]} {label}")
-    type_summary = ", ".join(type_summary_parts)
+            parts.append(f"{type_counts[mt]} {label}")
+    return ", ".join(parts)
+
+
+def generate_full(
+    catalog: list[dict],
+    cluster_order: list[str],
+    buckets: dict[str, list[dict]],
+    config: dict,
+) -> int:
+    """Generate CONTEXT.md — full version with complete synopses."""
+    all_titles = {e["title"] for e in catalog}
+    type_summary = _type_summary(catalog)
 
     md = [
-        "# Kevin McCoy's Collection — Intellectual Context (Full)",
+        f"# {config['collection_name']} — Intellectual Context (Full)",
         "",
         f"*{len(catalog)} entries ({type_summary}) across "
-        f"{sum(1 for b in buckets.values() if b)} thematic groupings. "
+        f"{len(cluster_order)} thematic clusters. "
         "This is the full rendering with complete synopses, themes, and relationship annotations. "
         "For lighter versions, see CONTEXT_COMPACT.md (~5K tokens) or CONTEXT_OVERVIEW.md (~500 tokens).*",
         "",
-        INTRO,
+        config["intellectual_profile"],
         "",
         "## Catalog",
         "",
     ]
 
     entry_count = 0
-    active_groups = 0
-
-    for idx, group in enumerate(GROUPINGS):
-        entries = buckets[idx]
+    for label in cluster_order:
+        entries = buckets.get(label, [])
         if not entries:
             continue
-        active_groups += 1
-        md.append(f"### {group['name']}")
+        md.append(f"### {label}")
         md.append("")
         for entry in entries:
             md.extend(format_entry_full(entry, all_titles))
@@ -431,20 +416,18 @@ def format_entry_compact(entry: dict, all_titles: set) -> str:
     return line
 
 
-def generate_compact(catalog: list[dict], buckets: dict[int, list[dict]]) -> int:
-    """Generate CONTEXT_COMPACT.md — one-line per entry with groupings."""
+def generate_compact(
+    catalog: list[dict],
+    cluster_order: list[str],
+    buckets: dict[str, list[dict]],
+    config: dict,
+) -> int:
+    """Generate CONTEXT_COMPACT.md — one-line per entry with clusters."""
     all_titles = {e["title"] for e in catalog}
-
-    type_counts = Counter(get_media_type(e) for e in catalog)
-    type_summary_parts = []
-    for mt in ["book", "film", "music"]:
-        if type_counts[mt]:
-            label = "books" if mt == "book" else "films" if mt == "film" else "albums"
-            type_summary_parts.append(f"{type_counts[mt]} {label}")
-    type_summary = ", ".join(type_summary_parts)
+    type_summary = _type_summary(catalog)
 
     md = [
-        "# Kevin McCoy's Collection — Compact Reference",
+        f"# {config['collection_name']} — Compact Reference",
         "",
         f"*{len(catalog)} entries ({type_summary}). One-line entries with themes and relationship pointers. "
         "For full synopses see CONTEXT.md; for intellectual profile only see CONTEXT_OVERVIEW.md.*",
@@ -452,12 +435,11 @@ def generate_compact(catalog: list[dict], buckets: dict[int, list[dict]]) -> int
     ]
 
     entry_count = 0
-
-    for idx, group in enumerate(GROUPINGS):
-        entries = buckets[idx]
+    for label in cluster_order:
+        entries = buckets.get(label, [])
         if not entries:
             continue
-        md.append(f"### {group['name']}")
+        md.append(f"### {label}")
         md.append("")
         for entry in entries:
             md.append(format_entry_compact(entry, all_titles))
@@ -472,64 +454,54 @@ def generate_compact(catalog: list[dict], buckets: dict[int, list[dict]]) -> int
 # TIER 3: CONTEXT_OVERVIEW.md — Intellectual profile only
 # ---------------------------------------------------------------------------
 
-def generate_overview(catalog: list[dict], buckets: dict[int, list[dict]]) -> None:
-    """Generate CONTEXT_OVERVIEW.md — pure intellectual fingerprint."""
+def generate_overview(
+    catalog: list[dict],
+    cluster_order: list[str],
+    buckets: dict[str, list[dict]],
+    config: dict,
+) -> None:
+    """Generate CONTEXT_OVERVIEW.md — short intellectual profile + top clusters."""
     total = len(catalog)
-    type_counts = Counter(get_media_type(e) for e in catalog)
-    active_groups = [(GROUPINGS[i]["name"], len(entries))
-                     for i, entries in buckets.items() if entries]
-    active_groups.sort(key=lambda x: x[1], reverse=True)
+    type_summary = _type_summary(catalog)
 
-    def representatives(group_idx: int, n: int = 4) -> list[str]:
-        entries = buckets[group_idx]
-        scored = sorted(entries,
-                        key=lambda e: len(e.get("in_conversation_with", [])),
-                        reverse=True)
-        return [e["title"] for e in scored[:n]]
-
-    # Year range
+    # Year range (only real years)
     years = [e["year"] for e in catalog if e.get("year")]
     year_range = f"{min(years)}\u2013{max(years)}" if years else "various"
 
-    # Media breakdown
-    type_summary_parts = []
-    for mt in ["book", "film", "music"]:
-        if type_counts[mt]:
-            label = "books" if mt == "book" else "films" if mt == "film" else "albums"
-            type_summary_parts.append(f"{type_counts[mt]} {label}")
-    type_summary = ", ".join(type_summary_parts)
+    def representatives(label: str, n: int = 2) -> list[str]:
+        entries = buckets.get(label, [])
+        scored = sorted(
+            entries,
+            key=lambda e: len(e.get("in_conversation_with", [])),
+            reverse=True,
+        )
+        return [e["title"] for e in scored[:n]]
+
+    max_clusters = int(config.get("max_overview_clusters", 15))
+    top_clusters = [lbl for lbl in cluster_order if lbl != MISC_CLUSTER_NAME][:max_clusters]
 
     md = [
-        "# Kevin McCoy's Collection — Intellectual Profile",
+        f"# {config['collection_name']} — Intellectual Profile",
         "",
-        f"*{total} entries ({type_summary}) spanning {year_range}. Lightweight overview for baseline context "
-        "loading. For entries see CONTEXT_COMPACT.md or CONTEXT.md.*",
+        f"*{total} entries ({type_summary}) spanning {year_range}. Lightweight overview for "
+        "baseline context loading. For entries see CONTEXT_COMPACT.md or CONTEXT.md.*",
         "",
-        INTRO,
+        config["intellectual_profile"],
         "",
-        "The collection's center of gravity: the post-Fluxus tradition of art as instruction, "
-        "event, and system; critical theory from Situationism through media studies to digital "
-        "culture critique; and a persistent attention to craft and embodied practice. Not an "
-        "institutional survey \u2014 a working artist's shelves shaped by decades of practice.",
+        config["profile_closer"],
         "",
         "## Major Clusters",
         "",
     ]
 
-    sized = [(idx, len(buckets[idx])) for idx in range(len(GROUPINGS)) if buckets[idx]]
-    sized.sort(key=lambda x: x[1], reverse=True)
-    for idx, count in sized[:15]:
-        reps = representatives(idx, 2)
+    for label in top_clusters:
+        count = len(buckets.get(label, []))
+        reps = representatives(label, 2)
         short_reps = [r if len(r) < 40 else r[:37] + "..." for r in reps]
-        md.append(f"- **{GROUPINGS[idx]['name']}** ({count}) \u2014 {', '.join(short_reps)}")
+        md.append(f"- **{label}** ({count}) \u2014 {', '.join(short_reps)}")
 
     md.append("")
-    md.append(
-        "Cross-cutting threads: technology and the body; spectacle and resistance; "
-        "institutional art vs. autonomous practice; archives, memory, and documentation; "
-        "craft survival in a dematerializing culture. The `in_conversation_with` graph "
-        "in the full catalog traces these connections across books, films, and music."
-    )
+    md.append(config["cross_cutting_threads"])
     md.append("")
 
     OVERVIEW_PATH.write_text("\n".join(md))
@@ -541,22 +513,23 @@ def generate_overview(catalog: list[dict], buckets: dict[int, list[dict]]) -> No
 
 def generate():
     catalog = load_catalog()
-    buckets = build_buckets(catalog)
+    config = load_config()
+    cluster_order, buckets = build_buckets(catalog, config)
 
     # Generate all three tiers
-    full_count = generate_full(catalog, buckets)
-    compact_count = generate_compact(catalog, buckets)
-    generate_overview(catalog, buckets)
+    full_count = generate_full(catalog, cluster_order, buckets, config)
+    compact_count = generate_compact(catalog, cluster_order, buckets, config)
+    generate_overview(catalog, cluster_order, buckets, config)
 
     # Report
-    active = sum(1 for b in buckets.values() if b)
+    active = len([lbl for lbl in cluster_order if buckets.get(lbl)])
     type_counts = Counter(get_media_type(e) for e in catalog)
     type_parts = []
     for mt in ["book", "film", "music"]:
         if type_counts[mt]:
             type_parts.append(f"{type_counts[mt]} {mt}s")
 
-    print(f"Generated {len(catalog)} entries ({', '.join(type_parts)}) across {active} groupings:\n")
+    print(f"Generated {len(catalog)} entries ({', '.join(type_parts)}) across {active} clusters:\n")
 
     for path, label in [
         (CONTEXT_PATH, "CONTEXT.md (full)"),

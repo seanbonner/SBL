@@ -1,3 +1,6 @@
+# Personal config (copy config.example.json to config.json and edit)
+config.json
+
 # Runtime artifacts
 processing_log.json
 inbox_manifest.json

@@ -1,0 +1,18 @@
+{
+  "_comment": "Copy this file to config.json and fill in your own details. config.json is gitignored so your personal profile stays local. Delete this _comment field in your copy.",
+
+  "owner_name": "Your Name",
+  "collection_name": "Your Name's Collection",
+
+  "intellectual_profile": "This is a personal media catalog — a structured record of the books, films, and music that have shaped how I think and work. It isn't a comprehensive survey of any field, but a working record of what I've actually read, watched, and listened to, and how those things connect to each other. Edit this paragraph in config.json to describe your own collection.",
+
+  "profile_closer": "A working library, not an institutional survey. Edit this in config.json.",
+
+  "cross_cutting_threads": "Cross-cutting threads and relationships are traced via the `in_conversation_with` graph in the full catalog.",
+
+  "cluster_min_size": 2,
+  "_cluster_min_size_note": "Minimum number of entries a theme must have to become its own cluster. Lower = more granular clusters. Higher = broader clusters with more in Miscellaneous.",
+
+  "max_overview_clusters": 15,
+  "_max_overview_clusters_note": "Maximum number of clusters to list in CONTEXT_OVERVIEW.md. The largest clusters are kept; the rest are omitted from the overview but still appear in compact/full."
+}
