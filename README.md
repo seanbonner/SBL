@@ -2,7 +2,9 @@
 
 Turn a physical media collection into a portable knowledge base for LLMs.
 
-This repository contains a structured catalog of books, films, and music extracted from photographs of shelves and imported from text lists. The catalog is designed to be loaded into LLM context windows, giving AI assistants awareness of the intellectual background behind a conversation — the books that shaped how you think, the films that informed your visual language, the music that soundtracks your practice.
+This repository is a template for building a structured catalog of books, films, and music extracted from photographs of shelves or imported from text lists. The catalog is designed to be loaded into LLM context windows, giving AI assistants awareness of the intellectual background behind a conversation — the books that shaped how you think, the films that informed your visual language, the music that soundtracks your practice.
+
+Fork it, fill it with your own collection, and point an LLM at the generated context files.
 
 ## Why
 
@@ -26,31 +28,32 @@ If `media_type` is missing from an entry, it defaults to `"book"` for backward c
 
 ```
 llmbrary/
-├── catalog.json              # Enriched catalog entries (structured data)
-├── CONTEXT.md                # Full catalog as markdown (~40K tokens)
-├── CONTEXT_COMPACT.md        # One-line per entry with groupings (~5K tokens)
-├── CONTEXT_OVERVIEW.md       # Intellectual profile only (~500 tokens)
+├── config.example.json       # Template for config.json (gitignored). Owner name, profile, cluster sizing.
+├── catalog.json              # Enriched catalog entries (gitignored, personal data)
+├── CONTEXT.md                # Full catalog as markdown (~40K tokens, gitignored)
+├── CONTEXT_COMPACT.md        # One-line per entry with clusters (~5K tokens, gitignored)
+├── CONTEXT_OVERVIEW.md       # Intellectual profile only (~500 tokens, gitignored)
 ├── schema.json               # JSON Schema for catalog validation
-├── extracted_titles.json     # Raw extraction data from vision processing
-├── unreadable.json           # Items that couldn't be identified from photos
 ├── photos/
 │   ├── inbox/                # Drop new shelf photos here (books, DVDs, CDs)
 │   └── processed/            # Photos move here after processing
-├── wiki/                     # Synthesized thematic pages (generated)
-│   ├── INDEX.md              # Table of contents for all wiki pages
-│   └── *.md                  # ~25 thematic essays tracing intellectual threads
+├── wiki/                     # Theme-based cluster pages (generated, gitignored)
+│   ├── INDEX.md              # Table of contents for all cluster pages
+│   └── *.md                  # One page per theme cluster, listing its entries
 ├── scripts/
 │   ├── ingest.py             # Scan inbox for new photos, build processing manifest
 │   ├── import_text.py        # Import books from a plain text list
 │   ├── import_media.py       # Import films or music from a plain text list
 │   ├── merge_catalog.py      # Merge new extractions into catalog with deduplication
 │   ├── regenerate.py         # Regenerate all context files + wiki from catalog.json
-│   ├── generate_wiki.py      # Wiki page generation engine
+│   ├── generate_wiki.py      # Theme-based wiki page generator
 │   └── lint.py               # Catalog quality review and suggestions
 ├── claude/                   # Claude-specific skill integration
 │   └── SKILL.md              # Skill wrapper with tiered loading strategy
 └── README.md
 ```
+
+Personal data (`config.json`, `catalog.json`, `CONTEXT*.md`, `wiki/`, processed photos) is gitignored by default, so you can fork this repo, build your own catalog, and still pull upstream improvements without leaking your library.
 
 ## Catalog Format
 
@@ -81,11 +84,13 @@ The full schema is defined in `schema.json`.
 
 ## Wiki Layer
 
-The `wiki/` directory contains synthesized thematic pages that trace intellectual threads across the collection. Inspired by Karpathy's LLM Knowledge Base pattern, these are not per-entry pages but essay-length syntheses that map how ideas flow between titles.
+The `wiki/` directory contains a theme-based cluster page per qualifying theme in your catalog. Each page lists the catalog entries that share that theme, with their synopses and `in_conversation_with` cross-references.
 
-Each wiki page covers a theme, movement, or conceptual thread — for example, "Situationism, Spectacle, and Everyday Life" synthesizes across Debord, the SI Anthology, Benjamin, Berman, Rancière, and the social practice art holdings. Pages cross-link to each other where threads intersect, and cite specific titles from the catalog.
+Clusters are derived directly from the `themes` arrays on your catalog entries — not from hardcoded keyword lists — so the wiki reflects the actual shape of *your* collection without needing code edits. A theme becomes a cluster once it has at least `cluster_min_size` entries (configurable in `config.json`, default 2). Each entry is assigned to its most specific qualifying theme, so narrower clusters aren't swallowed by broader ones.
 
-Wiki pages are generated from `catalog.json` by `scripts/generate_wiki.py` and regenerated alongside the context tiers. They're useful for LLM context when you want to understand the intellectual landscape of a topic area rather than individual entries. See `wiki/INDEX.md` for the full table of contents.
+Pages are regenerated from `catalog.json` alongside the context tiers. They're deliberately honest rather than essayistic: the generator organizes what's in the catalog, it doesn't invent prose. If you want longer-form synthesis for a particular theme, maintain that content outside the pipeline — the generated pages overwrite on each run.
+
+See `wiki/INDEX.md` for the generated table of contents.
 
 ## Catalog Quality
 
@@ -101,11 +106,11 @@ The catalog is rendered at three levels of detail, designed for different token 
 
 | Tier | File | Size | Tokens | Contains |
 |---|---|---|---|---|
-| Overview | `CONTEXT_OVERVIEW.md` | ~3 KB | ~500 | Intellectual profile, major clusters, cross-cutting threads |
-| Compact | `CONTEXT_COMPACT.md` | ~18 KB | ~5K | One-line per entry (title/creator/year) organized by grouping |
-| Full | `CONTEXT.md` | ~226 KB | ~40K | Complete synopses, themes, and relationship annotations |
+| Overview | `CONTEXT_OVERVIEW.md` | ~2-3 KB | ~500 | Intellectual profile, top clusters, cross-cutting threads |
+| Compact | `CONTEXT_COMPACT.md` | ~5-20 KB | ~5K | One-line per entry (title/creator/year) organized by cluster |
+| Full | `CONTEXT.md` | ~20-250 KB | ~5-40K | Complete synopses, themes, and relationship annotations |
 
-Non-book entries are tagged with `[film]` or `[music]` in the context files for easy identification. Within each thematic grouping, entries are organized by media type (books first, then films, then music).
+Sizes scale with catalog size. Non-book entries are tagged with `[film]` or `[music]` in the context files for easy identification. Within each cluster, entries are organized by media type (books first, then films, then music).
 
 **Choosing a tier:**
 
@@ -132,17 +137,40 @@ The `claude/SKILL.md` file is a skill wrapper for Claude Code and Cowork that im
 
 To use it, add the `claude/` directory to your Claude Code or Cowork skills path.
 
+## Configuration
+
+Copy `config.example.json` to `config.json` and edit the fields to personalize your library:
+
+```bash
+cp config.example.json config.json
+# edit config.json to set owner_name, collection_name, and profile text
+```
+
+`config.json` is gitignored, so your personal profile text stays local even when you push code changes upstream. If no `config.json` exists the pipeline falls back to `config.example.json`, and then to built-in defaults — so the scripts run out of the box on a fresh clone.
+
+Key fields:
+
+| Field | Description |
+|---|---|
+| `owner_name` | Your name, used internally and in headers |
+| `collection_name` | How the collection is titled in generated files ("Your Name's Collection") |
+| `intellectual_profile` | Paragraph describing the collection — the main body of `CONTEXT_OVERVIEW.md` |
+| `profile_closer` | Optional second paragraph for the overview |
+| `cross_cutting_threads` | Closing sentence about what threads run across the collection |
+| `cluster_min_size` | Minimum entries a theme needs to become its own cluster (default 2) |
+| `max_overview_clusters` | How many clusters to list in `CONTEXT_OVERVIEW.md` (default 15) |
+
 ## Extraction Methodology
 
-The catalog was built through a multi-stage pipeline:
+A suggested pipeline for building the catalog:
 
 1. **Photography** — Photographs of shelves capturing spine text at readable resolution (book spines, DVD/Blu-ray cases, CD jewel cases, vinyl sleeves)
-2. **Vision extraction** — LLM vision models identified titles and creators from spine images, producing `extracted_titles.json`. When the physical format is identifiable (DVD case vs. book spine vs. CD jewel case), entries are tagged with the appropriate `media_type`.
-3. **Enrichment** — Each identified title was enriched with year, synopsis, themes, and confidence scoring
-4. **Relationship mapping** — `in_conversation_with` links were generated by analyzing thematic overlap across the full collection (cross-media connections supported)
-5. **Context generation** — `scripts/regenerate.py` renders the structured catalog into the markdown format in `CONTEXT.md`, organized into 30 thematic categories
+2. **Vision extraction** — LLM vision models identify titles and creators from spine images. When the physical format is identifiable (DVD case vs. book spine vs. CD jewel case), entries get tagged with the appropriate `media_type`.
+3. **Enrichment** — Each identified title gets a year, synopsis, themes, and confidence scoring
+4. **Relationship mapping** — `in_conversation_with` links are generated by analyzing thematic overlap across the collection (cross-media connections supported)
+5. **Context generation** — `scripts/regenerate.py` renders the structured catalog into the three markdown context tiers and the `wiki/` cluster pages
 
-Some items could not be identified from photographs (recorded in `unreadable.json`). Entries with `confidence: "medium"` or `needs_review: true` may contain inaccuracies.
+Entries with `confidence: "medium"` or `needs_review: true` may contain inaccuracies and benefit from manual review.
 
 ## Workflow
 

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Kevin McCoy's Media Catalog",
-  "description": "Catalog of books, films, and music in Kevin McCoy's personal collection with intellectual relationships",
+  "title": "Personal Media Catalog",
+  "description": "Catalog of books, films, and music in a personal collection with intellectual relationships via in_conversation_with",
   "type": "array",
   "items": {
     "type": "object",
