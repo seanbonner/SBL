@@ -14,12 +14,18 @@ CONTEXT.md
 CONTEXT_COMPACT.md
 CONTEXT_OVERVIEW.md
 
+# Generated wiki pages (synthesized personal data)
+wiki/
+
 # Scripts with personal data
 generate_context.py
 
 # Python
 __pycache__/
 *.pyc
+
+# Claude Code local settings
+.claude/
 
 # macOS
 .DS_Store

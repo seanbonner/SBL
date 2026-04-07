@@ -147,6 +147,10 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
 .badge-review { background: rgba(233,69,96,0.15); color: var(--accent); }
 .badge-reviewed { background: rgba(72,187,120,0.2); color: var(--green); }
 .badge-flagged { background: rgba(233,69,96,0.25); color: var(--accent2); }
+.badge-enrichment { background: rgba(255,167,38,0.18); color: #ffa726; }
+.badge-book { background: rgba(99,179,237,0.15); color: var(--blue); }
+.badge-film { background: rgba(187,99,237,0.18); color: #bb63ed; }
+.badge-music { background: rgba(237,179,99,0.18); color: #edaa63; }
 
 .entry-synopsis {
   font-size: 0.85rem; color: var(--text2);
@@ -290,10 +294,64 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
   font-size: 0.85rem; color: var(--text2);
 }
 
+/* ── Text Import Tab ── */
+.import-area {
+  display: flex; gap: 1.5rem; margin-top: 0.5rem;
+}
+.import-input { flex: 1; min-width: 0; }
+.import-input textarea {
+  width: 100%; min-height: 300px; resize: vertical;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); padding: 0.75rem; border-radius: var(--radius);
+  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem;
+  line-height: 1.6;
+}
+.import-input textarea::placeholder { color: var(--text2); opacity: 0.5; }
+.import-controls {
+  display: flex; gap: 0.5rem; align-items: center;
+  margin-top: 0.75rem; flex-wrap: wrap;
+}
+.import-controls select, .import-controls button {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 0.4rem 0.7rem;
+  border-radius: var(--radius); font-size: 0.85rem; cursor: pointer;
+}
+.import-controls button:hover { background: var(--surface2); }
+.import-preview { flex: 1; min-width: 0; }
+.import-preview-header {
+  font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;
+  color: var(--text2);
+}
+.import-preview-list {
+  max-height: 400px; overflow-y: auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0.5rem;
+}
+.import-item {
+  padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.import-item:last-child { border-bottom: none; }
+.import-item .ii-title { font-weight: 600; }
+.import-item .ii-author { color: var(--text2); }
+.import-item .ii-year { color: var(--blue); font-size: 0.8rem; }
+.import-item.ii-dup { opacity: 0.4; text-decoration: line-through; }
+.import-item.ii-dup::after {
+  content: ' (duplicate)'; color: var(--accent); font-size: 0.75rem;
+  font-style: italic; text-decoration: none;
+}
+.import-summary {
+  margin-top: 0.75rem; font-size: 0.85rem; color: var(--text2);
+  padding: 0.5rem 0.75rem; background: var(--surface);
+  border-radius: var(--radius); border: 1px solid var(--border);
+}
+.import-summary strong { color: var(--text); }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .unreadable-card { flex-direction: column; }
   .unreadable-photo { flex: none; max-height: 250px; }
+  .import-area { flex-direction: column; }
 }
 </style>
 </head>
@@ -309,6 +367,7 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
   <div class="tabs">
     <button class="tab-btn active" data-tab="catalog">Catalog</button>
     <button class="tab-btn" data-tab="unreadable">Unreadable</button>
+    <button class="tab-btn" data-tab="import">Text Import</button>
   </div>
 
   <!-- Catalog Tab -->
@@ -320,10 +379,15 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
         <option value="medium">Medium confidence</option>
         <option value="reviewed">Reviewed</option>
         <option value="flagged">Flagged</option>
+        <option value="enrichment">Needs enrichment</option>
+        <option value="type_book">Books only</option>
+        <option value="type_film">Films only</option>
+        <option value="type_music">Music only</option>
       </select>
       <input type="text" id="search" placeholder="Search title, author, theme…">
       <span class="spacer"></span>
       <button onclick="exportCatalog()" class="btn-green">⬇ Save catalog.json</button>
+      <button onclick="exportEnrichmentQueue()" style="background:#ffa726;border-color:#ffa726;color:#1a1a2e;font-weight:600;">⬇ Export changes for enrichment</button>
     </div>
     <div id="catalog-list"></div>
     <div class="pagination" id="pagination"></div>
@@ -336,6 +400,53 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
     <div style="margin-top:1rem; display:flex; gap:0.5rem;">
       <button onclick="exportCatalog()" class="btn-green" style="padding:0.4rem 1rem; border-radius:var(--radius); border:none; cursor:pointer; font-size:0.85rem;">⬇ Save catalog.json</button>
       <button onclick="exportUnreadable()" style="padding:0.4rem 1rem; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; font-size:0.85rem;">⬇ Save unreadable.json</button>
+    </div>
+  </div>
+
+  <!-- Text Import Tab -->
+  <div class="tab-content" id="tab-import">
+    <p style="font-size:0.85rem; color:var(--text2); margin-bottom:0.75rem;">
+      Paste a list of items below — one per line. Select the media type, then choose a format or auto-detect.<br>
+      <strong>Books:</strong> <code>Title - Author</code>, <code>Title by Author</code>, <code>Title, Author</code>, <code>Title (Author)</code>, <code>Author: Title</code>, <code>"Title","Author","Year"</code>, or just <code>Title</code>.<br>
+      <strong>Films:</strong> <code>Title (Year) - Director</code>, <code>Title - Director</code>, <code>Director: Title</code>, or just <code>Title (Year)</code>.<br>
+      <strong>Music:</strong> <code>Artist - Album (Year)</code>, <code>Artist - Album</code>, <code>Album by Artist</code>, or just <code>Album</code>.<br>
+      Lines starting with <code>#</code> are treated as comments.
+    </p>
+    <div class="import-area">
+      <div class="import-input">
+        <textarea id="import-text" placeholder="Paste your list here…&#10;&#10;# Books:&#10;Invisible Cities - Italo Calvino&#10;Gödel, Escher, Bach by Douglas Hofstadter&#10;&#10;# Films:&#10;Stalker (1979) - Andrei Tarkovsky&#10;Meshes of the Afternoon - Maya Deren&#10;&#10;# Music:&#10;John Coltrane - A Love Supreme (1965)&#10;Music for 18 Musicians by Steve Reich"></textarea>
+        <div class="import-controls">
+          <select id="import-media-type" onchange="updateImportFormatOptions()">
+            <option value="book">Book</option>
+            <option value="film">Film</option>
+            <option value="music">Music</option>
+          </select>
+          <select id="import-format">
+            <option value="auto">Auto-detect format</option>
+            <option value="dash">Dash: Title - Author</option>
+            <option value="by">By: Title by Author</option>
+            <option value="comma">Comma: Title, Author</option>
+            <option value="paren">Paren: Title (Author)</option>
+            <option value="colon">Colon: Author: Title</option>
+            <option value="tab">Tab-separated</option>
+            <option value="csv">CSV: "Title","Author"</option>
+            <option value="title-only">Title only</option>
+          </select>
+          <button onclick="previewImport()">Preview</button>
+          <span class="spacer"></span>
+          <button class="btn-green" id="import-confirm-btn" onclick="confirmImport()" disabled style="color:#1a1a2e">✓ Add to Catalog</button>
+          <button onclick="exportImportedJSON()" id="import-export-btn" disabled style="background:#ffa726;border-color:#ffa726;color:#1a1a2e;font-weight:600;">⬇ Export JSON</button>
+        </div>
+      </div>
+      <div class="import-preview">
+        <div class="import-preview-header">Preview <span id="import-preview-count"></span></div>
+        <div class="import-preview-list" id="import-preview-list">
+          <div style="padding:1rem; color:var(--text2); text-align:center; font-size:0.85rem;">
+            Paste text and click Preview to see parsed results.
+          </div>
+        </div>
+        <div class="import-summary" id="import-summary" style="display:none;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -355,9 +466,12 @@ header .subtitle { color: var(--text2); font-size: 0.85rem; }
 // ── State ──
 let catalog = [];
 let unreadable = [];
-let promoted = [];      // entries moved from unreadable → catalog
+let promoted = [];      // entries moved from unreadable → catalog (also in catalog[])
+let promotedCount = 0;  // tracks how many were promoted for stats
 let reviewState = {};   // idx → { reviewed, flagged }
 let editState = {};     // idx → edited field values
+let originalValues = {};  // idx → { title, author } snapshotted on load
+let enrichmentNeeded = {}; // idx → { enrichment_needed, edited_fields }
 
 let currentFilter = 'all';
 let searchQuery = '';
@@ -381,6 +495,10 @@ async function init() {
     if (!catRes.ok || !unrRes.ok) throw new Error('Fetch failed');
     catalog = await catRes.json();
     unreadable = await unrRes.json();
+    // Snapshot original title/author for enrichment tracking
+    catalog.forEach((e, i) => {
+      originalValues[i] = { title: e.title ?? '', author: e.author ?? '' };
+    });
   } catch (e) {
     listEl.innerHTML = `
       <div class="error-msg">
@@ -405,6 +523,10 @@ function applyFilter() {
     if (currentFilter === 'medium' && entry.confidence !== 'medium') return false;
     if (currentFilter === 'reviewed' && !rs.reviewed) return false;
     if (currentFilter === 'flagged' && !rs.flagged) return false;
+    if (currentFilter === 'enrichment' && !enrichmentNeeded[origIdx]) return false;
+    if (currentFilter === 'type_book' && (entry.media_type || 'book') !== 'book') return false;
+    if (currentFilter === 'type_film' && (entry.media_type || 'book') !== 'film') return false;
+    if (currentFilter === 'type_music' && (entry.media_type || 'book') !== 'music') return false;
     if (q) {
       const haystack = [
         entry.title, entry.author, ...(entry.themes || []),
@@ -439,31 +561,38 @@ function renderCatalog() {
       ed._editing ? 'editing' : ''
     ].filter(Boolean).join(' ');
 
+    const mt = e.media_type || 'book';
     const title = ed.title ?? e.title ?? '';
     const author = ed.author ?? e.author ?? '';
+    const director = ed.director ?? e.director ?? '';
+    const artist = ed.artist ?? e.artist ?? '';
+    const creator = mt === 'film' ? director : mt === 'music' ? artist : author;
+    const creatorLabel = mt === 'film' ? 'Director' : mt === 'music' ? 'Artist' : 'Author';
     const year = ed.year ?? e.year ?? '';
     const synopsis = ed.synopsis ?? e.synopsis ?? '';
     const themes = ed.themes ?? e.themes ?? [];
-    const convo = e.in_conversation_with ?? [];
+    const convo = ed.in_conversation_with ?? e.in_conversation_with ?? [];
 
     return `
     <div class="${classes}" data-page-idx="${globalPageIdx}" data-orig-idx="${oi}">
       <div class="entry-display">
         <div class="entry-header">
           <span class="entry-title">${esc(title)}</span>
-          <span class="entry-author">${esc(author)}</span>
+          <span class="entry-author">${esc(creator)}</span>
           <span class="entry-year">${year || ''}</span>
           <div class="entry-badges">
+            ${(() => { const mt = e.media_type || 'book'; return mt !== 'book' ? `<span class="badge badge-${mt}">${mt}</span>` : ''; })()}
             ${e.confidence === 'medium' ? '<span class="badge badge-medium">medium</span>' : '<span class="badge badge-high">high</span>'}
             ${e.needs_review ? '<span class="badge badge-review">needs review</span>' : ''}
             ${rs.reviewed ? '<span class="badge badge-reviewed">✓ reviewed</span>' : ''}
             ${rs.flagged ? '<span class="badge badge-flagged">⚑ flagged</span>' : ''}
+            ${enrichmentNeeded[oi] ? '<span class="badge badge-enrichment">needs enrichment</span>' : ''}
           </div>
         </div>
         <div class="entry-synopsis">${esc(synopsis)}</div>
         <div class="entry-meta">
-          <div><label>Themes:</label> ${themes.map(t => `<span class="theme-tag">${esc(t)}</span>`).join('')}</div>
-          ${convo.length ? `<div><label>In conversation with:</label> ${convo.map(c => `<span class="convo-tag">${esc(c)}</span>`).join(', ')}</div>` : ''}
+          <div><label>Themes:</label> ${themes.length ? themes.map(t => `<span class="theme-tag">${esc(t)}</span>`).join('') : (enrichmentNeeded[oi] ? '<span style="color:#ffa726;font-style:italic"> Will be populated after enrichment.</span>' : '')}</div>
+          <div><label>In conversation with:</label> ${convo.length ? convo.map(c => `<span class="convo-tag">${esc(c)}</span>`).join(', ') : (enrichmentNeeded[oi] ? '<span style="color:#ffa726;font-style:italic"> Will be populated after enrichment.</span>' : '')}</div>
           <div><label>Source:</label> ${esc(e.source_image)}</div>
         </div>
         <div class="entry-actions">
@@ -474,7 +603,7 @@ function renderCatalog() {
       </div>
       <div class="edit-form" id="edit-${oi}">
         <div class="edit-row"><label>Title</label><input value="${escAttr(title)}" data-field="title"></div>
-        <div class="edit-row"><label>Author</label><input value="${escAttr(author)}" data-field="author"></div>
+        <div class="edit-row"><label>${creatorLabel}</label><input value="${escAttr(creator)}" data-field="${mt === 'film' ? 'director' : mt === 'music' ? 'artist' : 'author'}"></div>
         <div class="edit-row"><label>Year</label><input type="number" value="${year || ''}" data-field="year"></div>
         <div class="edit-row"><label>Synopsis</label><textarea data-field="synopsis">${esc(synopsis)}</textarea></div>
         <div class="edit-row"><label>Themes</label><input value="${escAttr(themes.join(', '))}" data-field="themes" placeholder="comma separated"></div>
@@ -511,21 +640,28 @@ function goPage(p) {
 
 // ── Stats ──
 function renderStats() {
-  const total = catalog.length + promoted.length;
+  const total = catalog.length;
   const reviewedCount = Object.values(reviewState).filter(r => r.reviewed).length;
   const needsReview = catalog.filter(e => e.needs_review).length;
   const flaggedCount = Object.values(reviewState).filter(r => r.flagged).length;
   const mediumCount = catalog.filter(e => e.confidence === 'medium').length;
   const unreadLeft = unreadable.length;
+  const enrichCount = Object.keys(enrichmentNeeded).length;
+  const bookCount = catalog.filter(e => (e.media_type || 'book') === 'book').length;
+  const filmCount = catalog.filter(e => e.media_type === 'film').length;
+  const musicCount = catalog.filter(e => e.media_type === 'music').length;
 
   document.getElementById('stats').innerHTML = `
     <div class="stat info"><strong>${total}</strong>catalog entries</div>
+    ${filmCount ? `<div class="stat" style="border-color:#bb63ed"><strong style="color:#bb63ed">${filmCount}</strong>films</div>` : ''}
+    ${musicCount ? `<div class="stat" style="border-color:#edaa63"><strong style="color:#edaa63">${musicCount}</strong>music</div>` : ''}
     <div class="stat ok"><strong>${reviewedCount}</strong>reviewed</div>
     <div class="stat warn"><strong>${needsReview}</strong>needs review</div>
     <div class="stat"><strong>${mediumCount}</strong>medium conf.</div>
     <div class="stat warn"><strong>${flaggedCount}</strong>flagged</div>
+    ${enrichCount ? `<div class="stat" style="border-color:#ffa726"><strong style="color:#ffa726">${enrichCount}</strong>needs enrichment</div>` : ''}
     <div class="stat"><strong>${unreadLeft}</strong>unreadable left</div>
-    ${promoted.length ? `<div class="stat ok"><strong>${promoted.length}</strong>newly identified</div>` : ''}
+    ${promotedCount ? `<div class="stat ok"><strong>${promotedCount}</strong>newly identified</div>` : ''}
   `;
 }
 
@@ -557,7 +693,31 @@ function saveEdit(oi) {
     catalog[oi][field] = val; // apply to in-memory catalog
   });
   editState[oi]._editing = false;
-  toast('Changes saved in memory');
+
+  // Check if title or author changed from original loaded values
+  const orig = originalValues[oi] || { title: '', author: '' };
+  const changedFields = [];
+  if ((editState[oi].title ?? '') !== orig.title) changedFields.push('title');
+  if ((editState[oi].author ?? '') !== orig.author) changedFields.push('author');
+  if (changedFields.length > 0) {
+    enrichmentNeeded[oi] = { enrichment_needed: true, edited_fields: changedFields };
+    catalog[oi].enrichment_needed = true;
+    catalog[oi].edited_fields = changedFields;
+    // Clear stale data — title/author changed means different book
+    const staleNotice = 'Awaiting enrichment \u2014 title/author was corrected during review.';
+    catalog[oi].synopsis = staleNotice;
+    catalog[oi].themes = [];
+    catalog[oi].in_conversation_with = [];
+    catalog[oi].year = null;
+    editState[oi].synopsis = staleNotice;
+    editState[oi].themes = [];
+    editState[oi].in_conversation_with = [];
+    editState[oi].year = null;
+    toast('Changes saved — stale data cleared, marked for enrichment');
+  } else {
+    toast('Changes saved in memory');
+  }
+
   renderCatalog();
 }
 
@@ -581,11 +741,22 @@ function exportCatalog() {
       const copy = { ...e };
       delete copy.needs_review; // clean up review flags
       return copy;
-    })
-    .concat(promoted);
+    });
 
   downloadJSON(output, 'catalog.json');
-  toast(`Exported ${output.length} entries (${promoted.length} newly added, flagged removed)`);
+  toast(`Exported ${output.length} entries (${promotedCount} newly identified, flagged removed)`);
+}
+
+function exportEnrichmentQueue() {
+  const queue = catalog
+    .filter((_, i) => enrichmentNeeded[i])
+    .map(e => ({ ...e }));
+  if (queue.length === 0) {
+    toast('No entries need enrichment');
+    return;
+  }
+  downloadJSON(queue, 'enrichment_queue.json');
+  toast(`Exported ${queue.length} entries for enrichment`);
 }
 
 function exportUnreadable() {
@@ -650,25 +821,30 @@ function promoteUnreadable() {
   if (!title) { toast('Title is required'); return; }
 
   const entry = unreadable[unreadableIdx];
-  const yearVal = document.getElementById('ur-year').value.trim();
-  const synopsisVal = document.getElementById('ur-synopsis').value.trim();
-  const themesVal = document.getElementById('ur-themes').value.trim();
 
-  promoted.push({
+  const newEntry = {
     title,
     author: author || null,
-    year: yearVal ? parseInt(yearVal, 10) : null,
-    synopsis: synopsisVal || null,
-    themes: themesVal ? themesVal.split(',').map(s => s.trim()).filter(Boolean) : [],
+    year: null,
+    synopsis: 'Awaiting enrichment.',
+    themes: [],
     source_image: entry.source_image,
     confidence: 'manual',
     in_conversation_with: [],
-    manually_added: true
-  });
+    manually_added: true,
+    enrichment_needed: true
+  };
+  catalog.push(newEntry);
+  const newIdx = catalog.length - 1;
+  originalValues[newIdx] = { title: newEntry.title, author: newEntry.author ?? '' };
+  enrichmentNeeded[newIdx] = { enrichment_needed: true, edited_fields: [] };
+  promoted.push(newEntry);
+  promotedCount++;
 
   unreadable.splice(unreadableIdx, 1);
   if (unreadableIdx >= unreadable.length) unreadableIdx = Math.max(0, unreadable.length - 1);
-  toast(`"${title}" added to catalog`);
+  toast(`"${title}" added to catalog (needs enrichment)`);
+  applyFilter();
   renderUnreadable();
   renderStats();
 }
@@ -785,6 +961,429 @@ function toast(msg) {
   el.classList.add('show');
   clearTimeout(toast._t);
   toast._t = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── Text Import ──────────────────────────────────────────────────────────────
+
+function updateImportFormatOptions() {
+  const mt = document.getElementById('import-media-type').value;
+  const sel = document.getElementById('import-format');
+  const bookFormats = [
+    ['auto','Auto-detect format'],['dash','Dash: Title - Author'],['by','By: Title by Author'],
+    ['comma','Comma: Title, Author'],['paren','Paren: Title (Author)'],['colon','Colon: Author: Title'],
+    ['tab','Tab-separated'],['csv','CSV: "Title","Author"'],['title-only','Title only']
+  ];
+  const filmFormats = [
+    ['auto','Auto-detect format'],['dash','Title (Year) - Director'],
+    ['colon','Director: Title (Year)'],['title-year','Title (Year) or Title']
+  ];
+  const musicFormats = [
+    ['auto','Auto-detect format'],['dash','Artist - Album (Year)'],
+    ['by','Album by Artist'],['csv','CSV: "Artist","Album","Year"'],['title-only','Title only']
+  ];
+  const formats = mt === 'film' ? filmFormats : mt === 'music' ? musicFormats : bookFormats;
+  sel.innerHTML = formats.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+}
+
+let importParsed = [];  // { title, author/director/artist, year, isDuplicate, matchedTitle, media_type }
+
+const TITLE_WORDS = new Set([
+  'the','a','an','of','in','on','for','and','to','with',
+  'introduction','guide','history','art','how','why','what'
+]);
+
+function normalizeTitle(t) {
+  t = t.toLowerCase().trim();
+  for (const p of ['the ','a ','an ']) {
+    if (t.startsWith(p)) { t = t.slice(p.length); break; }
+  }
+  return t;
+}
+
+function fuzzyRatio(a, b) {
+  // Simple SequenceMatcher-like ratio using longest common subsequence
+  const na = normalizeTitle(a), nb = normalizeTitle(b);
+  if (na === nb) return 1.0;
+  const len1 = na.length, len2 = nb.length;
+  if (!len1 || !len2) return 0;
+  // Build matching blocks (simplified LCS ratio)
+  const m = len1, n = len2;
+  const dp = Array.from({length: m + 1}, () => new Uint16Array(n + 1));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = na[i-1] === nb[j-1] ? dp[i-1][j-1] + 1 : Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  return (2.0 * dp[m][n]) / (m + n);
+}
+
+function findDuplicate(title, existingTitles, threshold) {
+  let bestRatio = 0, bestMatch = null;
+  for (const existing of existingTitles) {
+    const r = fuzzyRatio(title, existing);
+    if (r > bestRatio) { bestRatio = r; bestMatch = existing; }
+  }
+  return bestRatio >= threshold ? bestMatch : null;
+}
+
+function looksLikeName(text) {
+  const words = text.toLowerCase().split(/\s+/);
+  if (!words.length || words.length > 4) return false;
+  if (TITLE_WORDS.has(words[0])) return false;
+  return words.every(w => w.length < 20);
+}
+
+function parseCSVLine(line) {
+  // Simple CSV: "field","field","field"
+  const fields = [];
+  let i = 0, len = line.length;
+  while (i < len) {
+    while (i < len && line[i] === ' ') i++;
+    if (i < len && line[i] === ',') { i++; continue; }
+    if (i >= len) break;
+    if (line[i] === '"') {
+      i++;
+      let val = '';
+      while (i < len) {
+        if (line[i] === '"') {
+          if (i + 1 < len && line[i+1] === '"') { val += '"'; i += 2; }
+          else { i++; break; }
+        } else { val += line[i]; i++; }
+      }
+      fields.push(val);
+      while (i < len && line[i] === ' ') i++;
+      if (i < len && line[i] === ',') i++;
+    } else {
+      let val = '';
+      while (i < len && line[i] !== ',') { val += line[i]; i++; }
+      fields.push(val.trim());
+      if (i < len && line[i] === ',') i++;
+    }
+  }
+  if (!fields.length || !fields[0].trim()) return null;
+  const r = { title: fields[0].trim(), author: null, year: null };
+  if (fields.length >= 2 && fields[1].trim()) r.author = fields[1].trim();
+  if (fields.length >= 3 && fields[2].trim()) { const y = parseInt(fields[2]); if (!isNaN(y)) r.year = y; }
+  return r;
+}
+
+function detectFormat(line) {
+  if (line.startsWith('"')) return 'csv';
+  if (line.includes('\t')) return 'tab';
+  if (/\([^)]+\)\s*$/.test(line)) return 'paren';
+  if (/ — /.test(line) || / – /.test(line) || / - /.test(line)) return 'dash';
+  if (/\s+by\s+/i.test(line)) return 'by';
+  if (line.includes(':')) {
+    const left = line.split(':',1)[0].trim();
+    if (looksLikeName(left)) return 'colon';
+  }
+  if (line.includes(',')) {
+    const parts = line.split(',');
+    if (parts.length === 2 && looksLikeName(parts[1].trim())) return 'comma';
+  }
+  return 'title-only';
+}
+
+function importParseLine(line, forcedFormat) {
+  const s = line.trim();
+  if (!s || s.startsWith('#')) return null;
+
+  const fmt = forcedFormat && forcedFormat !== 'auto' ? forcedFormat : detectFormat(s);
+  let result = null;
+
+  switch (fmt) {
+    case 'csv': result = parseCSVLine(s); break;
+    case 'tab': {
+      const parts = s.split('\t');
+      if (parts.length >= 2) {
+        result = { title: parts[0].trim(), author: parts[1].trim() || null, year: null };
+        if (parts.length >= 3) { const y = parseInt(parts[2]); if (!isNaN(y)) result.year = y; }
+      }
+      break;
+    }
+    case 'paren': {
+      const m = s.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if (m) result = { title: m[1].trim(), author: m[2].trim(), year: null };
+      break;
+    }
+    case 'dash': {
+      for (const sep of [' — ',' – ',' - ']) {
+        if (s.includes(sep)) {
+          const parts = s.split(sep);
+          result = { title: parts[0].trim(), author: parts.slice(1).join(sep).trim() || null, year: null };
+          break;
+        }
+      }
+      break;
+    }
+    case 'by': {
+      const m = s.match(/^(.+?)\s+by\s+(.+)$/i);
+      if (m) result = { title: m[1].trim(), author: m[2].trim(), year: null };
+      break;
+    }
+    case 'comma': {
+      const parts = s.split(',', 2);
+      result = { title: parts[0].trim(), author: parts[1] ? parts[1].trim() : null, year: null };
+      break;
+    }
+    case 'colon': {
+      const parts = s.split(':', 2);
+      result = { title: parts[1] ? parts[1].trim() : null, author: parts[0].trim(), year: null };
+      break;
+    }
+    default:
+      result = { title: s, author: null, year: null };
+  }
+
+  if (!result || !result.title) result = { title: s, author: null, year: null };
+
+  // Extract trailing (year)
+  const ym = result.title.match(/\s*\((\d{4})\)\s*$/);
+  if (ym && result.year == null) {
+    result.year = parseInt(ym[1]);
+    result.title = result.title.slice(0, ym.index).trim();
+  }
+  return result;
+}
+
+// ── Film line parser (JS) ──
+function importParseFilmLine(line, forcedFormat) {
+  const s = line.trim();
+  if (!s || s.startsWith('#')) return null;
+
+  function extractYear(text) {
+    let m = text.match(/\s*\((\d{4})\)\s*$/);
+    if (m) return [text.slice(0, m.index).trim(), parseInt(m[1])];
+    m = text.match(/,?\s+(\d{4})\s*$/);
+    if (m) { const y = parseInt(m[1]); if (y >= 1800 && y <= 2100) return [text.slice(0, m.index).trim(), y]; }
+    return [text, null];
+  }
+
+  const fmt = (forcedFormat && forcedFormat !== 'auto') ? forcedFormat : detectFilmFormat(s);
+  let result = null;
+
+  switch (fmt) {
+    case 'dash': {
+      for (const sep of [' — ',' – ',' - ']) {
+        if (s.includes(sep)) {
+          const parts = s.split(sep, 2);
+          const [title, year] = extractYear(parts[0].trim());
+          result = { title, director: parts[1] ? parts[1].trim() : null, year };
+          break;
+        }
+      }
+      break;
+    }
+    case 'colon': {
+      const parts = s.split(':', 2);
+      const director = parts[0].trim();
+      const [title, year] = extractYear((parts[1] || '').trim());
+      if (title && director) result = { title, director, year };
+      break;
+    }
+    default: {
+      const [title, year] = extractYear(s);
+      result = { title, director: null, year };
+    }
+  }
+  if (!result || !result.title) result = { title: s, director: null, year: null };
+  return result;
+}
+
+function detectFilmFormat(line) {
+  for (const sep of [' — ',' – ',' - ']) { if (line.includes(sep)) return 'dash'; }
+  if (line.includes(':')) {
+    const left = line.split(':',1)[0].trim();
+    if (left.split(/\s+/).length <= 4) return 'colon';
+  }
+  return 'title-year';
+}
+
+// ── Music line parser (JS) ──
+function importParseMusicLine(line, forcedFormat) {
+  const s = line.trim();
+  if (!s || s.startsWith('#')) return null;
+
+  function extractYear(text) {
+    let m = text.match(/\s*\((\d{4})\)\s*$/);
+    if (m) return [text.slice(0, m.index).trim(), parseInt(m[1])];
+    return [text, null];
+  }
+
+  const fmt = (forcedFormat && forcedFormat !== 'auto') ? forcedFormat : detectMusicFormat(s);
+  let result = null;
+
+  switch (fmt) {
+    case 'csv': result = parseCSVLine(s); if (result) { result = { title: result.author, artist: result.title, year: result.year }; } break;
+    case 'dash': {
+      for (const sep of [' — ',' – ',' - ']) {
+        if (s.includes(sep)) {
+          const parts = s.split(sep, 2);
+          const artist = parts[0].trim();
+          const [album, year] = extractYear((parts[1] || '').trim());
+          if (album && artist) result = { title: album, artist, year };
+          break;
+        }
+      }
+      break;
+    }
+    case 'by': {
+      const m = s.match(/^(.+?)\s+by\s+(.+)$/i);
+      if (m) {
+        const [album, yr1] = extractYear(m[1].trim());
+        const [artist, yr2] = extractYear(m[2].trim());
+        result = { title: album, artist, year: yr2 || yr1 };
+      }
+      break;
+    }
+    default: {
+      const [title, year] = extractYear(s);
+      result = { title, artist: null, year };
+    }
+  }
+  if (!result || !result.title) result = { title: s, artist: null, year: null };
+  return result;
+}
+
+function detectMusicFormat(line) {
+  if (line.startsWith('"')) return 'csv';
+  for (const sep of [' — ',' – ',' - ']) { if (line.includes(sep)) return 'dash'; }
+  if (/\s+by\s+/i.test(line)) return 'by';
+  return 'title-only';
+}
+
+function previewImport() {
+  const text = document.getElementById('import-text').value;
+  const format = document.getElementById('import-format').value;
+  const mediaType = document.getElementById('import-media-type').value;
+  const lines = text.split('\n');
+  const threshold = 0.85;
+
+  // Only dedup against entries of the same media_type
+  const existingTitles = catalog
+    .filter(e => (e.media_type || 'book') === mediaType)
+    .map(e => e.title)
+    .concat(promoted.filter(e => (e.media_type || 'book') === mediaType).map(e => e.title));
+
+  importParsed = [];
+  const seenTitles = [...existingTitles];
+
+  for (const line of lines) {
+    const stripped = line.trim();
+    if (!stripped || stripped.startsWith('#')) continue;
+    let parsed;
+    if (mediaType === 'film') {
+      parsed = importParseFilmLine(stripped, format);
+    } else if (mediaType === 'music') {
+      parsed = importParseMusicLine(stripped, format);
+    } else {
+      parsed = importParseLine(stripped, format);
+    }
+    if (!parsed || !parsed.title) continue;
+    parsed.media_type = mediaType;
+
+    const match = findDuplicate(parsed.title, seenTitles, threshold);
+    importParsed.push({
+      ...parsed,
+      isDuplicate: !!match,
+      matchedTitle: match || null
+    });
+    if (!match) seenTitles.push(parsed.title);
+  }
+
+  // Render preview
+  const listEl = document.getElementById('import-preview-list');
+  const countEl = document.getElementById('import-preview-count');
+  const summaryEl = document.getElementById('import-summary');
+  const newCount = importParsed.filter(p => !p.isDuplicate).length;
+  const dupCount = importParsed.filter(p => p.isDuplicate).length;
+
+  countEl.textContent = `(${importParsed.length} parsed)`;
+
+  if (!importParsed.length) {
+    listEl.innerHTML = '<div style="padding:1rem;color:var(--text2);text-align:center;">No entries found. Check your input format.</div>';
+    summaryEl.style.display = 'none';
+    document.getElementById('import-confirm-btn').disabled = true;
+    document.getElementById('import-export-btn').disabled = true;
+    return;
+  }
+
+  listEl.innerHTML = importParsed.map(p => {
+    const cls = p.isDuplicate ? 'import-item ii-dup' : 'import-item';
+    const creatorVal = p.director || p.artist || p.author;
+    const creator = creatorVal ? ` <span class="ii-author">— ${esc(creatorVal)}</span>` : '';
+    const year = p.year ? ` <span class="ii-year">(${p.year})</span>` : '';
+    const mtBadge = (p.media_type && p.media_type !== 'book') ? `<span class="badge badge-${p.media_type}" style="margin-right:0.4rem;font-size:0.65rem;vertical-align:middle">${p.media_type}</span>` : '';
+    return `<div class="${cls}">${mtBadge}<span class="ii-title">${esc(p.title)}</span>${creator}${year}</div>`;
+  }).join('');
+
+  summaryEl.style.display = 'block';
+  summaryEl.innerHTML = `<strong>${newCount}</strong> new entries, <strong>${dupCount}</strong> duplicates skipped`;
+
+  document.getElementById('import-confirm-btn').disabled = newCount === 0;
+  document.getElementById('import-export-btn').disabled = newCount === 0;
+}
+
+function confirmImport() {
+  const newItems = importParsed.filter(p => !p.isDuplicate);
+  if (!newItems.length) { toast('No new entries to add'); return; }
+
+  for (const item of newItems) {
+    const mt = item.media_type || 'book';
+    const entry = {
+      title: item.title,
+      media_type: mt,
+      year: item.year || null,
+      source: 'text_import',
+      confidence: 'medium',
+      synopsis: 'Awaiting enrichment.',
+      themes: [],
+      in_conversation_with: [],
+      needs_review: true,
+      enrichment_needed: true
+    };
+    if (mt === 'film') { entry.director = item.director || null; }
+    else if (mt === 'music') { entry.artist = item.artist || null; }
+    else { entry.author = item.author || null; }
+    catalog.push(entry);
+    const newIdx = catalog.length - 1;
+    originalValues[newIdx] = { title: entry.title, author: entry.author ?? '' };
+    enrichmentNeeded[newIdx] = { enrichment_needed: true, edited_fields: [] };
+  }
+
+  toast(`Added ${newItems.length} entries to catalog`);
+  importParsed = [];
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-preview-list').innerHTML = '<div style="padding:1rem;color:var(--green);text-align:center;">✓ Entries added. Switch to Catalog tab or save catalog.json.</div>';
+  document.getElementById('import-summary').style.display = 'none';
+  document.getElementById('import-confirm-btn').disabled = true;
+  document.getElementById('import-export-btn').disabled = true;
+  renderStats();
+}
+
+function exportImportedJSON() {
+  const newItems = importParsed.filter(p => !p.isDuplicate).map(item => {
+    const mt = item.media_type || 'book';
+    const entry = {
+      title: item.title,
+      media_type: mt,
+      year: item.year || null,
+      source: 'text_import',
+      confidence: 'medium',
+      synopsis: 'Awaiting enrichment.',
+      themes: [],
+      in_conversation_with: [],
+      needs_review: true,
+      enrichment_needed: true
+    };
+    if (mt === 'film') { entry.director = item.director || null; }
+    else if (mt === 'music') { entry.artist = item.artist || null; }
+    else { entry.author = item.author || null; }
+    return entry;
+  });
+  if (!newItems.length) { toast('No new entries to export'); return; }
+  downloadJSON(newItems, 'new_extractions.json');
+  toast(`Exported ${newItems.length} entries as new_extractions.json`);
 }
 
 // ── Start ──

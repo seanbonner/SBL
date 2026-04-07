@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-ingest.py — Scan photos/inbox/ for new bookshelf images and prepare them for processing.
+ingest.py — Scan photos/inbox/ for new shelf images and prepare them for processing.
+
+Supports multi-media: shelf photos may contain book spines, DVD/Blu-ray spines,
+or CD/vinyl spines. The vision extraction step downstream should tag entries with
+the appropriate media_type ("book", "film", or "music") when identifiable from
+the physical format (DVD cases, CD jewel cases, vinyl sleeves, etc.).
 
 Usage:
     python3 scripts/ingest.py              # list new images awaiting processing
     python3 scripts/ingest.py --dry-run    # preview without writing anything
     python3 scripts/ingest.py --move       # move processed images to photos/processed/
+    python3 scripts/ingest.py --media-hint film  # hint that these photos are DVD/Blu-ray shelves
 
 Reads and writes processing_log.json to avoid reprocessing images.
 """
@@ -79,6 +85,7 @@ def build_manifest(files: list[Path], log: dict) -> list[dict]:
             "path": str(f),
             "size_bytes": stat.st_size,
             "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+            "media_hint": "mixed",  # overridden at write time with CLI arg
         })
     return manifest
 
@@ -102,6 +109,14 @@ def main():
         type=int,
         default=0,
         help="Number of titles extracted (for log bookkeeping after extraction).",
+    )
+    parser.add_argument(
+        "--media-hint",
+        choices=["book", "film", "music", "mixed"],
+        default="mixed",
+        help="Hint about what kind of physical media these photos contain. "
+             "Default: mixed (let vision extraction decide per-item). "
+             "Use 'film' for DVD/Blu-ray shelves, 'music' for CD/vinyl shelves.",
     )
     args = parser.parse_args()
 
@@ -143,6 +158,7 @@ def main():
             "filename": entry["filename"],
             "processed_at": now,
             "titles_extracted": args.titles_extracted,
+            "media_hint": args.media_hint,
         })
     log["last_run"] = now
 
@@ -164,7 +180,9 @@ def main():
     else:
         print("\nTip: run with --move to move processed images out of inbox/.")
 
-    # Write manifest for downstream tools
+    # Write manifest for downstream tools — include media hint from CLI
+    for entry in manifest:
+        entry["media_hint"] = args.media_hint
     manifest_path = REPO_ROOT / "inbox_manifest.json"
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2)
