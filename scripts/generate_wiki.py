@@ -6,7 +6,7 @@ actually traces the connections in the catalog.
 
 Layout:
     wiki/
-        INDEX.md                — top-level index
+        index-sbl.md                — top-level index
         <theme-slug>.md         — one cluster page per qualifying theme
         books/<book-slug>.md    — one page per catalog entry
 
@@ -316,7 +316,7 @@ def make_cluster_page(
         "",
         f"*{count} {noun} in this cluster.*",
         "",
-        "[← Back to wiki index](INDEX.md)",
+        "[← Back to wiki index](index-sbl.md)",
         "",
     ]
 
@@ -389,7 +389,7 @@ def generate_wiki() -> list[tuple[str, str, str]]:
         stale.unlink()
     # Wipe stale cluster pages too
     for stale in WIKI_DIR.glob("*.md"):
-        if stale.name == "INDEX.md":
+        if stale.name == "index-sbl.md":
             continue
         stale.unlink()
 
@@ -407,7 +407,7 @@ def generate_wiki() -> list[tuple[str, str, str]]:
     for _title, filename, content in book_pages:
         (BOOKS_DIR / filename).write_text(content)
 
-    (WIKI_DIR / "INDEX.md").write_text(
+    (WIKI_DIR / "index-sbl.md").write_text(
         make_index_page(cluster_pages, book_pages, config, len(catalog))
     )
 
@@ -417,15 +417,15 @@ def generate_wiki() -> list[tuple[str, str, str]]:
 
 if __name__ == "__main__":
     pages = generate_wiki()
-    print(f"Generated {len(pages)} cluster pages + per-book pages + INDEX.md\n")
+    print(f"Generated {len(pages)} cluster pages + per-book pages + index-sbl.md\n")
     for title, filename, content in pages:
         size = len(content)
         n_lines = content.count("\n")
         print(f"  {filename:45s} {size:>6d} bytes  ({n_lines} lines)")
 
-    index_path = WIKI_DIR / "INDEX.md"
+    index_path = WIKI_DIR / "index-sbl.md"
     index_size = index_path.stat().st_size
-    print(f"\n  {'INDEX.md':45s} {index_size:>6d} bytes")
+    print(f"\n  {'index-sbl.md':45s} {index_size:>6d} bytes")
 
     book_count = len(list(BOOKS_DIR.glob("*.md")))
     print(f"  books/ contains {book_count} per-book pages")
