@@ -1,5 +1,11 @@
 # SBL — Shelf-Based LLM Library
 
+> ## 📦 Superseded by [Grimoire](https://github.com/seanbonner/Grimoire)
+>
+> SBL has been rolled into **[Grimoire](https://github.com/seanbonner/Grimoire)** — a unified personal knowledge system that combines SBL's library catalog (now called **Shelves**) with a research wiki layer (**Scrolls**), behind a single inbox and six named operations.
+>
+> If you want just the shelf-based library catalog, this repo still works standalone. If you want the full system — library + wiki + the integration between them — use Grimoire instead. All future development happens there.
+
 Turn a physical media collection into a portable knowledge base for LLMs.
 
 > **A modded fork of [llmbrary](https://github.com/mccoyspace/llmbrary)** by Kevin McCoy. SBL keeps the catalog format and pipeline shape but rewrites the generators to be configuration-driven and theme-clustered, so you can fork it, point it at your own catalog, and get honest output without editing code.
